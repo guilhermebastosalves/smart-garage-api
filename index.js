@@ -99,6 +99,11 @@ app.use('/api/estado', estadoRoutes);
 app.use('/api/troca', trocaRoutes);
 
 
+const path = require("path");
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
 // SERVIDOR
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

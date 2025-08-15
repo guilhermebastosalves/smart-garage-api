@@ -48,6 +48,9 @@ const Automovel = db.sequelize.define('automovel', {
     valor: {
         type: db.Sequelize.DECIMAL(10, 2),
         allowNull: false
+    },
+    imagem: {
+        type: db.Sequelize.STRING
     }
 });
 

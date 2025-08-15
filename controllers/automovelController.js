@@ -34,23 +34,33 @@ exports.createAutomovel = async (req, res) => {
         marcaId
     } = req.body;
 
+    const file = req.file;
+    const imagemPath = file ? file.path : null;
 
-    const automovel = await Entidade.Automovel.create({
+    console.log(file);
 
-        ano_fabricacao: ano_fabricacao,
-        ano_modelo: ano_modelo,
-        ativo: ativo,
-        cor: cor,
-        combustivel: combustivel,
-        km: km,
-        origem: origem,
-        placa: placa,
-        renavam: renavam,
-        valor: valor,
-        marcaId: marcaId
-    });
+    try {
+        const automovel = await Entidade.Automovel.create({
 
-    return res.status(201).send(automovel);
+            ano_fabricacao: ano_fabricacao,
+            ano_modelo: ano_modelo,
+            ativo: ativo,
+            cor: cor,
+            combustivel: combustivel,
+            km: km,
+            origem: origem,
+            placa: placa,
+            renavam: renavam,
+            valor: valor,
+            marcaId: marcaId,
+            imagem: imagemPath
+        });
+
+        return res.status(201).send(automovel);
+    } catch (error) {
+        console.error("Erro ao criar automóvel:", error);
+        return res.status(500).send({ erro: true, mensagemErro: "Erro ao cadastrar automóvel" });
+    }
 
 
 }
