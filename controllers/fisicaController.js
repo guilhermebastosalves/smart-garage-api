@@ -14,6 +14,41 @@ exports.getAllFisica = async (req, res) => {
     })
 };
 
+exports.getFisicaById = async (req, res) => {
+
+    const id = req.params.id;
+
+    try {
+        const fisica = await Entidade.Fisica.findByPk(id);
+
+        if (fisica) {
+            return res.status(200).send(fisica);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Cliente não encontrado' });;
+        }
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+
+};
+
+exports.getFisicaByCpf = async (req, res) => {
+
+    const identificacao = req.params.identificacao;
+
+    try {
+        const fisica = await Entidade.Fisica.findAll({
+            where: {
+                cpf: identificacao
+            },
+        });
+        res.status(200).send(fisica);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
+
 
 exports.createFisica = async (req, res) => {
 

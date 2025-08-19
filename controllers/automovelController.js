@@ -132,3 +132,16 @@ exports.updateAutomovel = async (req, res) => {
         handleServerError(res, erro);
     }
 };
+
+exports.getAllAutomoveisAtivos = async (req, res) => {
+    try {
+        const automovel = await Entidade.Automovel.findAll({
+            where: {
+                ativo: true
+            },
+        });
+        res.status(200).send(automovel);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};

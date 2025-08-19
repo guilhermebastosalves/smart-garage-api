@@ -4,5 +4,7 @@ const clienteController = require('../controllers/clienteController');
 
 router.get('/', clienteController.getAllClientes);
 router.post('/', clienteController.createCliente);
+router.get('/:id', clienteController.getClienteById);
+
 
 module.exports = router;

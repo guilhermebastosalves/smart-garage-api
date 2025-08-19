@@ -14,6 +14,25 @@ exports.getAllClientes = async (req, res) => {
     })
 };
 
+exports.getClienteById = async (req, res) => {
+
+    const id = req.params.id;
+
+    try {
+        const cliente = await Entidade.Cliente.findByPk(id);
+
+        if (cliente) {
+            return res.status(200).send(cliente);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Cliente não encontrado' });;
+        }
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+
+};
+
 
 exports.createCliente = async (req, res) => {
 

@@ -14,6 +14,25 @@ exports.getAllJuridica = async (req, res) => {
     })
 };
 
+exports.getJuridicaById = async (req, res) => {
+
+    const id = req.params.id;
+
+    try {
+        const juridica = await Entidade.Juridica.findByPk(id);
+
+        if (juridica) {
+            return res.status(200).send(juridica);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Cliente não encontrado' });;
+        }
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+
+};
+
 
 exports.createJuridica = async (req, res) => {
 
