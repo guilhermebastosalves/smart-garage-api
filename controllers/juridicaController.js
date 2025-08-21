@@ -33,16 +33,37 @@ exports.getJuridicaById = async (req, res) => {
 
 };
 
+exports.getJuridicaByCnpj = async (req, res) => {
+
+    const identificacao = req.params.identificacao;
+
+    try {
+        const juridica = await Entidade.Juridica.findAll({
+            where: {
+                cnpj: identificacao
+            },
+        });
+
+        if (juridica) {
+            res.status(200).send(juridica);
+        } else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Pessoa jurídica não encontrada' });;
+        }
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
 
 exports.createJuridica = async (req, res) => {
 
-    var cnpj = req.body.cnpj;
-    var nome_responsavel = req.body.nome_responsavel;
-    var razao_social = req.body.razao_social;
-    var clienteId = req.body.clienteId;
+    const {
+        cnpj,
+        nome_responsavel,
+        razao_social,
+        clienteId
+    } = req.body;
 
     const juridica = await Entidade.Juridica.create({
-
         cnpj: cnpj,
         nome_responsavel: nome_responsavel,
         razao_social: razao_social,

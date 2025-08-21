@@ -37,7 +37,6 @@ exports.createAutomovel = async (req, res) => {
     const file = req.file;
     const imagemPath = file ? file.path : null;
 
-    console.log(file);
 
     try {
         const automovel = await Entidade.Automovel.create({
