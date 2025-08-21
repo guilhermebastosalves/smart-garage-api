@@ -1,5 +1,5 @@
 const Entidade = require('../models/index');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -74,6 +74,31 @@ exports.getConsignacaoById = async (req, res) => {
         handleServerError(res, erro);
     }
 
+};
+
+exports.getConsignacaoByAutomovel = async (req, res) => {
+
+    const automovelId = req.params.automovelId;
+
+    try {
+
+        const consignacao = await Entidade.Consignacao.findOne({
+            where: {
+                ativo: true,
+                automovelId: automovelId
+            }
+        });
+
+        if (consignacao) {
+            return res.status(200).send(consignacao);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada' })
+        }
+
+    } catch (erro) {
+        handleServerError(res, erro)
+    }
 };
 
 exports.updateConsignacao = async (req, res) => {
