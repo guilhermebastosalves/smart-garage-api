@@ -12,6 +12,7 @@ const Funcionario = require('./Funcionario');
 const Consignacao = require('./Consignacao');
 const Compra = require('./Compra');
 const Troca = require('./Troca');
+const Gasto = require('./Gasto');
 
 // RELAÇÃ0 1xN MARCA-AUTOMÓVEL
 Marca.hasMany(Automovel);
@@ -85,6 +86,10 @@ Troca.belongsTo(Funcionario);
 Automovel.hasOne(Troca);
 Troca.belongsTo(Automovel);
 
+// RELAÇÃO 1XN AUTOMOVEL-GASTO
+Automovel.hasMany(Gasto);
+Gasto.belongsTo(Automovel);
+
 module.exports = {
     Automovel,
     Marca,
@@ -99,5 +104,6 @@ module.exports = {
     Funcionario,
     Consignacao,
     Compra,
-    Troca
+    Troca,
+    Gasto
 }

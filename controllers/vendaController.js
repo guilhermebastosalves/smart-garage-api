@@ -45,4 +45,16 @@ exports.createVenda = async (req, res) => {
     } catch (err) {
         handleServerError(res, err)
     }
-}
+};
+
+exports.getAllVendasOrderByData = async (req, res) => {
+    Entidade.Venda.findAll({
+        order: [
+            ["data", "DESC"]
+        ]
+    }).then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
+};

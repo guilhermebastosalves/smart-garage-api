@@ -110,6 +110,31 @@ exports.getAutomovelById = async (req, res) => {
 
 };
 
+exports.getAutomovelByRenavam = async (req, res) => {
+
+    const renavam = req.params.renavam;
+
+    try {
+
+        const automovel = await Entidade.Automovel.findOne({
+            where: {
+                renavam: renavam
+            }
+        });
+
+        if (automovel) {
+
+            return res.status(200).send(automovel);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Automóvel não encontrado' });;
+        }
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+
+};
+
 exports.updateAutomovel = async (req, res) => {
 
     const id = req.params.id;
