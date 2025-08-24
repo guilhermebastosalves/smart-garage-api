@@ -16,7 +16,7 @@ const Funcionario = db.sequelize.define('funcionario', {
         allowNull: false
     },
     senha: {
-        type: db.Sequelize.STRING(50),
+        type: db.Sequelize.STRING(60),
         allowNull: false
     },
     telefone: {

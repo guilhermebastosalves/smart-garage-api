@@ -14,6 +14,8 @@ const Compra = require('./Compra');
 const Troca = require('./Troca');
 const Gasto = require('./Gasto');
 const Manutencao = require('./Manutencao');
+const Gerente = require('./Gerente');
+const Vendedor = require('./Vendedor');
 
 // RELAÇÃ0 1xN MARCA-AUTOMÓVEL
 Marca.hasMany(Automovel);
@@ -95,6 +97,15 @@ Gasto.belongsTo(Automovel);
 Automovel.hasMany(Manutencao);
 Manutencao.belongsTo(Automovel);
 
+// RELAÇÃO 1X1 FUNCIONARIO-GERENTE
+Funcionario.hasOne(Gerente);
+Gerente.belongsTo(Funcionario);
+
+// RELAÇÃO 1X1 FUNCIONARIO-VENDEDOR
+Funcionario.hasOne(Vendedor);
+Vendedor.belongsTo(Funcionario);
+
+
 
 module.exports = {
     Automovel,
@@ -112,5 +123,7 @@ module.exports = {
     Compra,
     Troca,
     Gasto,
-    Manutencao
+    Manutencao,
+    Gerente,
+    Vendedor
 }
