@@ -141,6 +141,17 @@ exports.updateAutomovel = async (req, res) => {
 
     const updateData = req.body;
 
+    if (req.file) {
+        // Se um novo arquivo existe, adiciona seu caminho aos dados de atualização
+        const file = req.file;
+        // const imagemPath = file ? file.path : null;
+
+        // updateData.imagem = req.file.path;
+
+        updateData.imagem = file ? file.path : null;
+        console.log(`Nova imagem recebida para o automóvel ${id}: ${req.file.path}`);
+    }
+
     try {
         const update = await Entidade.Automovel.update(updateData, {
             where: { id: id }

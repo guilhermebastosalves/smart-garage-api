@@ -90,6 +90,9 @@ const vendaRoutes = require("./routes/vendaRoutes");
 // ROTAS - GASTO
 const gastoRoutes = require("./routes/gastoRoutes");
 
+// ROTAS - MANUTENCAO
+const manutencaoRoutes = require("./routes/manutencaoRoutes");
+
 app.use(express.json());
 app.use('/api/automovel', automovelRoutes);
 app.use('/api/marca', marcaRoutes);
@@ -105,6 +108,7 @@ app.use('/api/estado', estadoRoutes);
 app.use('/api/troca', trocaRoutes);
 app.use('/api/venda', vendaRoutes);
 app.use('/api/gasto', gastoRoutes);
+app.use('/api/manutencao', manutencaoRoutes);
 
 
 const path = require("path");

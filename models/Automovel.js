@@ -17,7 +17,8 @@ const Automovel = db.sequelize.define('automovel', {
     },
     ativo: {
         type: db.Sequelize.BOOLEAN,
-        allowNull: false
+        allowNull: false,
+        defaultValue: true
     },
     cor: {
         type: db.Sequelize.STRING(30),
