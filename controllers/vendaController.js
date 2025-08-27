@@ -58,3 +58,45 @@ exports.getAllVendasOrderByData = async (req, res) => {
         handleServerError(res, err);
     })
 };
+
+exports.getVendaById = async (req, res) => {
+
+    const id = req.params.id;
+
+    try {
+        const venda = await Entidade.Venda.findByPk(id);
+
+        if (venda) {
+            return res.status(200).send(venda);
+        }
+        else {
+            return res.status(404).send({ erro: true, mensagemErro: 'Venda não encontrada' });;
+        }
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+
+};
+
+
+exports.updateVenda = async (req, res) => {
+
+    const id = req.params.id;
+
+    const updateData = req.body;
+
+    try {
+        const update = await Entidade.Venda.update(updateData, {
+            where: { id: id }
+        });
+
+        if (!update) {
+            return res.status(404).send({ erro: true, mensagemErro: 'Venda não encontrada' });
+        }
+
+        return res.status(200).send(update);
+
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+};

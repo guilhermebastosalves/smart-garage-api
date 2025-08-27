@@ -4,6 +4,9 @@ const vendaController = require("../controllers/vendaController");
 
 router.get("/", vendaController.getAllVendas);
 router.get("/data", vendaController.getAllVendasOrderByData);
+router.get("/:id", vendaController.getVendaById);
 router.post("/", vendaController.createVenda);
+router.put('/:id', vendaController.updateVenda);
+
 
 module.exports = router;

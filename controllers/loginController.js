@@ -26,9 +26,7 @@ exports.login = async (req, res) => {
 
         // 2. Comparar a senha enviada com a senha hasheada no banco
         const senhaValida = await bcrypt.compare(senha, funcionario?.senha);
-        console.log(senha)
-        console.log(funcionario?.senha)
-        console.log(senhaValida)
+
         if (!senhaValida) {
             return res.status(401).send({ mensagem: "Senha inválida." });
         }

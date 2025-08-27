@@ -61,3 +61,25 @@ exports.getTrocaById = async (req, res) => {
     }
 
 };
+
+exports.updateTroca = async (req, res) => {
+
+    const id = req.params.id;
+
+    const updateData = req.body;
+
+    try {
+        const update = await Entidade.Troca.update(updateData, {
+            where: { id: id }
+        });
+
+        if (!update) {
+            return res.status(404).send({ erro: true, mensagemErro: 'Troca não encontrada' });
+        }
+
+        return res.status(200).send(update);
+
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+};

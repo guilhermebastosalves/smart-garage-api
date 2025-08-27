@@ -7,6 +7,7 @@ router.post("/", consignacaoController.createConsignacao);
 router.get("/datainicio", consignacaoController.getAllConsignacoesOrderByData);
 router.get('/ativo', consignacaoController.getAllConsignacoesAtivas);
 router.get('/automovel/:automovelId', consignacaoController.getConsignacaoByAutomovel);
+router.get('/detalhes/:id', consignacaoController.getConsignacaoDetalhesById);
 router.get('/:id', consignacaoController.getConsignacaoById);
 router.put('/:id', consignacaoController.updateConsignacao);
 

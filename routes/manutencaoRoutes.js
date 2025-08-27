@@ -5,6 +5,6 @@ const manutencaoController = require('../controllers/manutencaoController');
 router.get('/', manutencaoController.getAllManutencoes);
 router.get('/:id', manutencaoController.getManutencaoById);
 router.post('/', manutencaoController.createManutencao);
-router.put('/', manutencaoController.updateManutencao);
+router.put('/:id', manutencaoController.updateManutencao);
 
 module.exports = router;

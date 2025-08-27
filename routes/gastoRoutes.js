@@ -5,6 +5,6 @@ const gastoController = require('../controllers/gastoController');
 router.get('/', gastoController.getAllGastos);
 router.get('/:id', gastoController.getGastoById);
 router.post('/', gastoController.createGasto);
-router.put('/', gastoController.updateGasto);
+router.put('/:id', gastoController.updateGasto);
 
 module.exports = router;
