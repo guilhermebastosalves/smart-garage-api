@@ -77,3 +77,47 @@ exports.updateGasto = async (req, res) => {
         handleServerError(res, erro);
     }
 };
+
+exports.getGastoDetalhesById = async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
+        const gasto = await Entidade.Gasto.findByPk(id, {
+            include: [
+                {
+                    model: Entidade.Automovel,
+                    as: 'automovel',
+                    include: [
+                        // A inclusão da Marca a partir do Automóvel está correta
+                        { model: Entidade.Marca, as: 'marca' }
+                    ]
+                }
+
+            ]
+        });
+
+        if (!gasto) {
+            return res.status(404).send({ erro: true, mensagemErro: 'Gasto não encontrada' });
+        }
+
+        // ETAPA 2: Busca os modelos da marca encontrada
+        // Usamos o marcaId do automóvel que veio na primeira query
+        const marcaIdDoAutomovel = gasto.automovel.marcaId;
+        const modelosDaMarca = await Entidade.Modelo.findAll({
+            where: { marcaId: marcaIdDoAutomovel }
+        });
+
+        // ETAPA 3: Junta os resultados antes de enviar
+        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
+        const detalhesCompletos = gasto.get({ plain: true });
+
+        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
+        detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
+
+        return res.status(200).send(detalhesCompletos);
+
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+};

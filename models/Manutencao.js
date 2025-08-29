@@ -18,6 +18,7 @@ const Manutencao = db.sequelize.define('manutencao', {
     },
     data_retorno: {
         type: db.Sequelize.DATEONLY,
+        defaultValue: null
     },
     descricao: {
         type: db.Sequelize.STRING(255)

@@ -9,6 +9,7 @@ router.post('/', upload.single("file"), automovelController.createAutomovel);
 router.post('/verificar', automovelController.verificarDuplicidade);
 router.get('/ativo', automovelController.getAllAutomoveisAtivos);
 router.get('/renavam/:renavam', automovelController.getAutomovelByRenavam);
+router.get('/detalhes/:id', automovelController.getAutomovelDetalhesById);
 router.get('/:id', automovelController.getAutomovelById);
 router.put('/:id', upload.single("file"), automovelController.updateAutomovel)
 
