@@ -1,4 +1,6 @@
 const Entidade = require('../models/index');
+const { sequelize } = require('../db');
+
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -126,4 +128,52 @@ exports.getManutencaoDetalhesById = async (req, res) => {
     } catch (erro) {
         handleServerError(res, erro);
     }
+};
+
+exports.deleteManutencao = async (req, res) => {
+    const id = req.params.id;
+
+    // Inicia uma transação
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Encontrar a manutencao para obter o ID do automóvel
+        const manutencao = await Entidade.Manutencao.findByPk(id, { transaction: t });
+
+        if (!manutencao) {
+            await t.rollback(); // Desfaz a transação
+            return res.status(404).send({ erro: true, mensagemErro: "Manutenção não encontrada." });
+        }
+
+        // 2. Deletar o registro de manutencao
+        await Entidade.Manutencao.destroy({
+            where: { id: id },
+            transaction: t
+        });
+
+        // 3. Se tudo deu certo, confirma as operações
+        await t.commit();
+
+        return res.status(200).send({ sucesso: true, mensagem: "Manutenção excluída com sucesso." });
+
+    } catch (erro) {
+        // 4. Se algo deu errado, desfaz tudo
+        await t.rollback();
+        handleServerError(res, erro); // função de erro genérica
+    }
+};
+
+exports.getAllManutencoesOrderByData = async (req, res) => {
+    Entidade.Manutencao.findAll({
+        where: {
+            ativo: true,
+        },
+        order: [
+            ["data_envio", "DESC"]
+        ]
+    }).then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
 };

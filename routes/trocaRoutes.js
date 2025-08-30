@@ -7,5 +7,7 @@ router.post('/', trocaController.createTroca);
 router.get('/detalhes/:id', trocaController.getTrocaDetalhesById);
 router.get('/:id', trocaController.getTrocaById);
 router.put('/:id', trocaController.updateTroca);
+router.delete('/:id', trocaController.deleteTroca);
+
 
 module.exports = router;

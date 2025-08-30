@@ -1,4 +1,5 @@
 const Entidade = require('../models/index');
+const { sequelize } = require('../db');
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -120,4 +121,49 @@ exports.getGastoDetalhesById = async (req, res) => {
     } catch (erro) {
         handleServerError(res, erro);
     }
+};
+
+exports.deleteGasto = async (req, res) => {
+    const id = req.params.id;
+
+    // Inicia uma transação
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Encontrar a compra para obter o ID do automóvel
+        const gasto = await Entidade.Gasto.findByPk(id, { transaction: t });
+
+        if (!gasto) {
+            await t.rollback(); // Desfaz a transação
+            return res.status(404).send({ erro: true, mensagemErro: "Gasto não encontrado." });
+        }
+
+        // 2. Deletar o registro de gasto
+        await Entidade.Gasto.destroy({
+            where: { id: id },
+            transaction: t
+        });
+
+        // 3. Se tudo deu certo, confirma as operações
+        await t.commit();
+
+        return res.status(200).send({ sucesso: true, mensagem: "Compra e automóvel associado foram excluídos com sucesso." });
+
+    } catch (erro) {
+        // 4. Se algo deu errado, desfaz tudo
+        await t.rollback();
+        handleServerError(res, erro); // função de erro genérica
+    }
+};
+
+exports.getAllGastosOrderByData = async (req, res) => {
+    Entidade.Gasto.findAll({
+        order: [
+            ["data", "DESC"]
+        ]
+    }).then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
 };
