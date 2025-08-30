@@ -1,4 +1,6 @@
 const Entidade = require("../models/index");
+const { sequelize } = require("../db");
+
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -150,5 +152,51 @@ exports.getVendaDetalhesById = async (req, res) => {
 
     } catch (erro) {
         handleServerError(res, erro);
+    }
+};
+
+exports.deleteVenda = async (req, res) => {
+    const id = req.params.id;
+
+    // Inicia uma transação
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Encontrar a venda para obter o ID do automóvel
+        const venda = await Entidade.Venda.findByPk(id, { transaction: t });
+
+        if (!venda) {
+            await t.rollback(); // Desfaz a transação
+            return res.status(404).send({ erro: true, mensagemErro: "Venda não encontrada." });
+        }
+
+        const automovelIdParaReativar = venda.automovelId;
+
+        // 2. Deletar o registro da venda
+        await Entidade.Venda.destroy({
+            where: { id: id },
+            transaction: t
+        });
+
+        // 3. ATUALIZAR o automóvel associado, definindo-o como ATIVO
+        if (automovelIdParaReativar) {
+            await Entidade.Automovel.update(
+                { ativo: true }, // A mudança principal está aqui!
+                {
+                    where: { id: automovelIdParaReativar },
+                    transaction: t
+                }
+            );
+        }
+
+        // 4. Se tudo deu certo, confirma as operações
+        await t.commit();
+
+        return res.status(200).send({ sucesso: true, mensagem: "Venda excluída e automóvel retornado ao estoque." });
+
+    } catch (erro) {
+        // 5. Se algo deu errado, desfaz tudo
+        await t.rollback();
+        handleServerError(res, erro); // Sua função de erro genérica
     }
 };

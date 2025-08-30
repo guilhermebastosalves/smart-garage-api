@@ -1,5 +1,6 @@
 const Entidade = require('../models/index');
 const { Op, where } = require('sequelize');
+const { sequelize } = require("../db");
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -184,6 +185,117 @@ exports.getConsignacaoDetalhesById = async (req, res) => {
         return res.status(200).send(detalhesCompletos);
 
     } catch (erro) {
+        handleServerError(res, erro);
+    }
+};
+
+
+// Arquivo: src/controllers/consignacaoController.js
+
+// ... (outras funções do controller)
+
+exports.encerrarConsignacao = async (req, res) => {
+    const id = req.params.id;
+    const { data_termino } = req.body; // Recebe a data de término do front-end
+
+    // Validação simples para garantir que a data foi enviada
+    if (!data_termino) {
+        return res.status(400).send({ erro: true, mensagemErro: "A data de término é obrigatória." });
+    }
+
+    // 1. Converte a string recebida para um objeto Date.
+    const dataTerminoObj = new Date(data_termino);
+
+    // 2. Cria um objeto Date para o dia de hoje.
+    const hoje = new Date();
+
+    // 3. Zera as horas de ambas as datas para comparar apenas o dia, 
+    //    ignorando o horário e o fuso.
+    dataTerminoObj.setHours(0, 0, 0, 0);
+    hoje.setHours(0, 0, 0, 0);
+
+    // 4. Compara os objetos Date. Agora a comparação é cronológica.
+    if (dataTerminoObj > hoje) {
+        return res.status(400).send({ erro: true, mensagemErro: "A data de término não pode ser uma data futura." });
+    }
+
+    try {
+        const [updateCount] = await Entidade.Consignacao.update(
+            {
+                ativo: false,       // Define a consignação como inativa
+                data_fim: data_termino // Define a data de término
+            },
+            {
+                where: { id: id }
+            }
+        );
+
+        if (updateCount === 0) {
+            return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada ou já estava inativa.' });
+        }
+
+        // Retorna uma mensagem de sucesso
+        return res.status(200).send({ sucesso: true, mensagem: 'Consignação encerrada com sucesso!' });
+
+    } catch (erro) {
+        handleServerError(res, erro);
+    }
+};
+
+exports.deleteConsignacao = async (req, res) => {
+    const id = req.params.id;
+
+    // Inicia uma transação
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Encontrar a consignação para obter o ID do automóvel
+        const consignacao = await Entidade.Consignacao.findByPk(id, { transaction: t });
+
+        if (!consignacao) {
+            await t.rollback(); // Desfaz a transação
+            return res.status(404).send({ erro: true, mensagemErro: "Consignação não encontrada." });
+        }
+
+        const automovelIdParaDeletar = consignacao.automovelId;
+
+        // 2. Deletar o registro da consignação
+        await Entidade.Consignacao.destroy({
+            where: { id: id },
+            transaction: t
+        });
+
+        // 3. Deletar o registro do automóvel associado
+        if (automovelIdParaDeletar) {
+
+            const auto = await Entidade.Automovel.findByPk(automovelIdParaDeletar);
+
+
+            await Entidade.Automovel.destroy({
+                where: { id: automovelIdParaDeletar },
+                transaction: t
+            });
+
+            await Entidade.Modelo.destroy({
+                where: { marcaId: auto?.dataValues?.marcaId },
+                transaction: t
+            })
+
+            await Entidade.Marca.destroy({
+                where: { id: auto?.dataValues?.marcaId },
+                transaction: t
+            })
+
+        }
+
+        // 4. Se tudo deu certo, confirma as operações no banco
+        await t.commit();
+
+        return res.status(200).send({ sucesso: true, mensagem: "Consignação e automóvel associado foram excluídos com sucesso." });
+
+    } catch (erro) {
+        // 5. Se algo deu errado, desfaz todas as operações
+        await t.rollback();
         handleServerError(res, erro);
     }
 };

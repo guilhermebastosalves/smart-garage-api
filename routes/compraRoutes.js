@@ -7,6 +7,7 @@ router.post('/', compraController.createCompra);
 router.get('/detalhes/:id', compraController.getCompraDetalhesById);
 router.get('/:id', compraController.getCompraById);
 router.put('/:id', compraController.updateCompra);
+router.delete('/:id', compraController.deleteCompra);
 
 
 module.exports = router;
