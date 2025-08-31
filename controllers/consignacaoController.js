@@ -137,6 +137,19 @@ exports.getAllConsignacoesAtivas = async (req, res) => {
     }
 };
 
+exports.getAllConsignacoesInativas = async (req, res) => {
+    try {
+        const consignacoes = await Entidade.Consignacao.findAll({
+            where: {
+                ativo: false
+            },
+        });
+        res.status(200).send(consignacoes);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
+
 exports.getConsignacaoDetalhesById = async (req, res) => {
     const id = req.params.id;
 
@@ -219,25 +232,51 @@ exports.encerrarConsignacao = async (req, res) => {
         return res.status(400).send({ erro: true, mensagemErro: "A data de término não pode ser uma data futura." });
     }
 
+    const t = await sequelize.transaction();
+
     try {
-        const [updateCount] = await Entidade.Consignacao.update(
+
+        // 2. Encontrar a consignação para obter o ID do automóvel
+        const consignacao = await Entidade.Consignacao.findByPk(id, { transaction: t });
+
+        if (!consignacao) {
+            await t.rollback(); // Desfaz a transação se a consignação não for encontrada
+            return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada.' });
+        }
+
+        const automovelIdParaInativar = consignacao?.automovelId;
+
+        // 3. Atualizar a consignação para inativa
+        await Entidade.Consignacao.update(
             {
-                ativo: false,       // Define a consignação como inativa
-                data_fim: data_termino // Define a data de término
+                ativo: false,
+                data_fim: data_termino
             },
             {
-                where: { id: id }
+                where: { id: id },
+                transaction: t // Garante que esta operação faça parte da transação
             }
         );
 
-        if (updateCount === 0) {
-            return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada ou já estava inativa.' });
+        // 4. ATUALIZAR O AUTOMÓVEL para inativo
+        if (automovelIdParaInativar) {
+            await Entidade.Automovel.update(
+                { ativo: false },
+                {
+                    where: { id: automovelIdParaInativar },
+                    transaction: t // Garante que esta operação também faça parte da transação
+                }
+            );
         }
+
+        // 5. Se tudo deu certo, confirma as operações no banco
+        await t.commit();
 
         // Retorna uma mensagem de sucesso
         return res.status(200).send({ sucesso: true, mensagem: 'Consignação encerrada com sucesso!' });
 
     } catch (erro) {
+        await t.rollback();
         handleServerError(res, erro);
     }
 };

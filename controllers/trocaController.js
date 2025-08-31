@@ -209,3 +209,15 @@ exports.deleteTroca = async (req, res) => {
         handleServerError(res, erro); // Sua função de erro genérica
     }
 };
+
+exports.getAllTrocasOrderByData = async (req, res) => {
+    Entidade.Troca.findAll({
+        order: [
+            ["data", "DESC"]
+        ]
+    }).then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
+};

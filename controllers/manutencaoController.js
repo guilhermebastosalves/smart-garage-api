@@ -177,3 +177,84 @@ exports.getAllManutencoesOrderByData = async (req, res) => {
         handleServerError(res, err);
     })
 };
+
+exports.getAllManutencoesAtivas = async (req, res) => {
+    try {
+        const manutencoes = await Entidade.Manutencao.findAll({
+            where: {
+                ativo: true
+            },
+        });
+        res.status(200).send(manutencoes);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
+
+exports.getAllManutencoesInativas = async (req, res) => {
+    try {
+        const manutencoes = await Entidade.Manutencao.findAll({
+            where: {
+                ativo: false
+            },
+        });
+        res.status(200).send(manutencoes);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
+
+exports.finalizarManutencao = async (req, res) => {
+    const id = req.params.id;
+    const { data_retorno } = req.body; // Recebe a data de retorno do front-end
+
+    // Validação da data
+    if (!data_retorno) {
+        return res.status(400).send({ erro: true, mensagemErro: "A data de retorno é obrigatória." });
+    }
+
+    const dataRetornoObj = new Date(data_retorno);
+    const hoje = new Date();
+    dataRetornoObj.setHours(0, 0, 0, 0);
+    hoje.setHours(0, 0, 0, 0);
+
+    if (dataRetornoObj > hoje) {
+        return res.status(400).send({ erro: true, mensagemErro: "A data de retorno não pode ser uma data futura." });
+    }
+
+    // Inicia uma transação
+    const t = await sequelize.transaction();
+
+    try {
+        // 1. Encontrar a manutenção para obter o ID do automóvel
+        const manutencao = await Entidade.Manutencao.findByPk(id, { transaction: t });
+
+        if (!manutencao) {
+            await t.rollback();
+            return res.status(404).send({ erro: true, mensagemErro: 'Manutenção não encontrada.' });
+        }
+
+
+        // 2. Atualizar a manutenção para inativa
+        await Entidade.Manutencao.update(
+            {
+                ativo: false,
+                data_retorno: data_retorno
+            },
+            {
+                where: { id: id },
+                transaction: t
+            }
+        );
+
+        // 4. Se tudo deu certo, confirma as operações
+        await t.commit();
+
+        return res.status(200).send({ sucesso: true, mensagem: 'Manutenção finalizada!' });
+
+    } catch (erro) {
+        // 5. Se algo deu errado, desfaz tudo
+        await t.rollback();
+        handleServerError(res, erro);
+    }
+};

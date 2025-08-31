@@ -181,6 +181,19 @@ exports.getAllAutomoveisAtivos = async (req, res) => {
     }
 };
 
+exports.getAllAutomoveisInativos = async (req, res) => {
+    try {
+        const automovel = await Entidade.Automovel.findAll({
+            where: {
+                ativo: false
+            },
+        });
+        res.status(200).send(automovel);
+    } catch (err) {
+        handleServerError(res, err);
+    }
+};
+
 exports.getAutomovelDetalhesById = async (req, res) => {
     const id = req.params.id;
 

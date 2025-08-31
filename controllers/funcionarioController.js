@@ -37,3 +37,11 @@ exports.createFuncionario = async (req, res) => {
         handleServerError(res, error);
     }
 };
+
+exports.getAllFuncionarios = async (req, res) => {
+    Entidade.Funcionario.findAll().then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
+};

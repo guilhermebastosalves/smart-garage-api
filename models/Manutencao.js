@@ -25,6 +25,7 @@ const Manutencao = db.sequelize.define('manutencao', {
     },
     previsao_retorno: {
         type: db.Sequelize.DATEONLY,
+        defaultValue: null
     },
     valor: {
         type: db.Sequelize.DECIMAL(10, 2),

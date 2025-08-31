@@ -188,3 +188,15 @@ exports.deleteCompra = async (req, res) => {
         handleServerError(res, erro); // Sua função de erro genérica
     }
 };
+
+exports.getAllComprasOrderByData = async (req, res) => {
+    Entidade.Compra.findAll({
+        order: [
+            ["data", "DESC"]
+        ]
+    }).then((values) => {
+        res.status(200).send(values);
+    }).catch((err) => {
+        handleServerError(res, err);
+    })
+};

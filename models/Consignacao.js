@@ -14,7 +14,7 @@ const Consignacao = db.sequelize.define('consignacao', {
     },
     data_fim: {
         type: db.Sequelize.DATEONLY,
-        default: null
+        defaultValue: null
     },
     data_inicio: {
         type: db.Sequelize.DATEONLY,

@@ -13,15 +13,15 @@ const Troca = db.sequelize.define("troca", {
     },
     data: {
         type: db.Sequelize.DATEONLY,
-        allowNull: null
+        allowNull: false
     },
     forma_pagamento: {
         type: db.Sequelize.ENUM('Cartão', 'Dinheiro', 'Financiamento', 'Pix'),
-        allowNull: false
+        allowNull: true
     },
     valor: {
         type: db.Sequelize.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: true
     },
     automovel_fornecido: {
         type: db.Sequelize.INTEGER,

@@ -13,7 +13,7 @@ const Venda = db.sequelize.define("venda", {
     },
     data: {
         type: db.Sequelize.DATEONLY,
-        allowNull: null
+        allowNull: false
     },
     forma_pagamento: {
         type: db.Sequelize.ENUM('Cartão', 'Dinheiro', 'Financiamento', 'Pix'),
