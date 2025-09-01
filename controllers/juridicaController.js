@@ -1,4 +1,6 @@
 const Entidade = require('../models/index');
+const { Op } = require("sequelize");
+
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -71,4 +73,21 @@ exports.createJuridica = async (req, res) => {
     });
 
     return res.status(201).send(juridica);
+};
+
+exports.verificarDuplicidade = async (req, res) => {
+
+    const { cnpj } = req.body;
+
+    const cnpjExistente = await Entidade.Juridica.findOne({
+        where: {
+            [Op.or]: [{ cnpj }]
+        }
+    });
+
+    if (cnpjExistente) {
+        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com esse cnpj.' });
+    }
+
+    return res.status(200).send({ erro: false });
 };
