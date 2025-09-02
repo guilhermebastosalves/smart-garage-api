@@ -33,11 +33,30 @@ exports.login = async (req, res) => {
 
         // 3. Descobrir o papel (role) do funcionário
         let role = null;
-        const gerente = await Entidade.Gerente.findByPk(funcionario?.id);
+
+
+        // const gerente = await Entidade.Gerente.findByPk(funcionario?.id);
+        // if (gerente) {
+        //     role = 'gerente';
+        // } else {
+        //     const vendedor = await Entidade.Vendedor.findByPk(funcionario?.id);
+        //     if (vendedor) {
+        //         role = 'vendedor';
+        //     }
+        // }
+
+        const gerente = await Entidade.Gerente.findOne({
+            where: { funcionarioId: funcionario.id }
+        });
+
         if (gerente) {
             role = 'gerente';
         } else {
-            const vendedor = await Entidade.Vendedor.findByPk(funcionario?.id);
+            // 2. Verifica se é vendedor usando a chave estrangeira correta
+            const vendedor = await Entidade.Vendedor.findOne({
+                where: { funcionarioId: funcionario.id }
+            });
+
             if (vendedor) {
                 role = 'vendedor';
             }

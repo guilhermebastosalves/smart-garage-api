@@ -1,4 +1,6 @@
 const Entidade = require('../models/index');
+const { Op } = require("sequelize");
+
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -36,20 +38,51 @@ exports.getClienteById = async (req, res) => {
 
 exports.createCliente = async (req, res) => {
 
-    var data_cadastro = req.body.data_cadastro;
-    var email = req.body.email;
-    var ativo = req.body.ativo;
-    var nome = req.body.nome;
-    var telefone = req.body.telefone;
+    // var data_cadastro = req.body.data_cadastro;
+    // var email = req.body.email;
+    // // var ativo = req.body.ativo;
+    // var nome = req.body.nome;
+    // var telefone = req.body.telefone;
 
-    const cliente = await Entidade.Cliente.create({
+    const {
+        data_cadastro,
+        email,
+        nome,
+        telefone
+    } = req.body
 
-        data_cadastro: data_cadastro,
-        email: email,
-        ativo: ativo,
-        nome: nome,
-        telefone: telefone
+    try {
+
+        const cliente = await Entidade.Cliente.create({
+
+            data_cadastro: data_cadastro,
+            email: email,
+            ativo: true,
+            nome: nome,
+            telefone: telefone
+        });
+
+        return res.status(201).send(cliente);
+    } catch (erro) {
+        handleServerError(res, erro)
+    }
+};
+
+exports.verificarDuplicidade = async (req, res) => {
+
+    const { email } = req.body;
+
+    const emailExistente = await Entidade.Cliente.findOne({
+        where: {
+            [Op.or]: [{ email }]
+        }
     });
 
-    return res.status(201).send(cliente);
+    if (emailExistente) {
+        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com esse email.' });
+    }
+
+
+
+    return res.status(200).send({ erro: false });
 };

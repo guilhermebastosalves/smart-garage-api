@@ -25,6 +25,10 @@ Automovel.belongsTo(Marca);
 Marca.hasMany(Modelo);
 Modelo.belongsTo(Marca);
 
+// RELAÇÃO 1X1 AUTOMOVEL-MODELO
+Modelo.hasOne(Automovel);
+Automovel.belongsTo(Modelo);
+
 // RELAÇÃO 1X1 VENDA-AUTOMÓVEL
 Automovel.hasOne(Venda);
 Venda.belongsTo(Automovel);

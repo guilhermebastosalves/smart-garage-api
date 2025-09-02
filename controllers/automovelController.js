@@ -31,7 +31,8 @@ exports.createAutomovel = async (req, res) => {
         placa,
         renavam,
         valor,
-        marcaId
+        marcaId,
+        modeloId
     } = req.body;
 
     const file = req.file;
@@ -52,7 +53,8 @@ exports.createAutomovel = async (req, res) => {
             renavam: renavam,
             valor: valor,
             marcaId: marcaId,
-            imagem: imagemPath
+            imagem: imagemPath,
+            modeloId: modeloId
         });
 
         return res.status(201).send(automovel);
@@ -204,6 +206,10 @@ exports.getAutomovelDetalhesById = async (req, res) => {
                 {
                     model: Entidade.Marca,
                     as: 'marca'
+                },
+                {
+                    model: Entidade.Modelo,
+                    as: 'modelo'
                 }
 
             ]
@@ -215,19 +221,19 @@ exports.getAutomovelDetalhesById = async (req, res) => {
 
         // ETAPA 2: Busca os modelos da marca encontrada
         // Usamos o marcaId do automóvel que veio na primeira query
-        const marcaIdDoAutomovel = automovel.marcaId;
-        const modelosDaMarca = await Entidade.Modelo.findAll({
-            where: { marcaId: marcaIdDoAutomovel }
-        });
+        // const marcaIdDoAutomovel = automovel.marcaId;
+        // const modelosDaMarca = await Entidade.Modelo.findAll({
+        //     where: { id: automovel?.modeloId }
+        // });
 
         // ETAPA 3: Junta os resultados antes de enviar
         // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        const detalhesCompletos = automovel.get({ plain: true });
+        // const detalhesCompletos = automovel.get({ plain: true });
 
         // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        detalhesCompletos.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
+        // detalhesCompletos.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
 
-        return res.status(200).send(detalhesCompletos);
+        return res.status(200).send(automovel);
 
     } catch (erro) {
         handleServerError(res, erro);

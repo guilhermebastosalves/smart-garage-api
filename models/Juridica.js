@@ -18,7 +18,8 @@ const Juridica = db.sequelize.define('juridica', {
     },
     razao_social: {
         type: db.Sequelize.STRING(50),
-        unique: 'razao_social_unique_idx'
+        unique: 'razao_social_unique_idx',
+        defaultValue: null
     }
 });
 

@@ -99,6 +99,9 @@ const loginRoutes = require('./routes/loginRoutes');
 // ROTAS - FUNCIONARIO
 const funcionarioRoutes = require('./routes/funcionarioRoutes');
 
+// ROTAS - VENDEDOR
+const vendedorRoutes = require('./routes/vendedorRoutes');
+
 app.use(express.json());
 app.use('/api/automovel', automovelRoutes);
 app.use('/api/marca', marcaRoutes);
@@ -117,6 +120,7 @@ app.use('/api/gasto', gastoRoutes);
 app.use('/api/manutencao', manutencaoRoutes);
 app.use('/api/login', loginRoutes);
 app.use('/api/funcionario', funcionarioRoutes);
+app.use('/api/vendedor', vendedorRoutes);
 
 
 const path = require("path");

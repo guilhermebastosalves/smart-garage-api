@@ -98,7 +98,9 @@ exports.getTrocaDetalhesById = async (req, res) => {
                     as: 'automovel',
                     include: [
                         // A inclusão da Marca a partir do Automóvel está correta
-                        { model: Entidade.Marca, as: 'marca' }
+                        { model: Entidade.Marca, as: 'marca' },
+                        { model: Entidade.Modelo, as: "modelo" }
+
                     ]
                 },
                 {
@@ -119,19 +121,19 @@ exports.getTrocaDetalhesById = async (req, res) => {
 
         // ETAPA 2: Busca os modelos da marca encontrada
         // Usamos o marcaId do automóvel que veio na primeira query
-        const marcaIdDoAutomovel = troca.automovel.marcaId;
-        const modelosDaMarca = await Entidade.Modelo.findAll({
-            where: { marcaId: marcaIdDoAutomovel }
-        });
+        // const marcaIdDoAutomovel = troca.automovel.marcaId;
+        // const modelosDaMarca = await Entidade.Modelo.findAll({
+        //     where: { marcaId: marcaIdDoAutomovel }
+        // });
 
         // ETAPA 3: Junta os resultados antes de enviar
         // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        const detalhesCompletos = troca.get({ plain: true });
+        // const detalhesCompletos = troca.get({ plain: true });
 
         // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
+        // detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
 
-        return res.status(200).send(detalhesCompletos);
+        return res.status(200).send(troca);
 
     } catch (erro) {
         handleServerError(res, erro);
@@ -173,15 +175,15 @@ exports.deleteTroca = async (req, res) => {
                 transaction: t
             });
 
-            await Entidade.Modelo.destroy({
-                where: { marcaId: auto?.dataValues?.marcaId },
-                transaction: t
-            })
+            // await Entidade.Modelo.destroy({
+            //     where: { marcaId: auto?.dataValues?.marcaId },
+            //     transaction: t
+            // })
 
-            await Entidade.Marca.destroy({
-                where: { id: auto?.dataValues?.marcaId },
-                transaction: t
-            })
+            // await Entidade.Marca.destroy({
+            //     where: { id: auto?.dataValues?.marcaId },
+            //     transaction: t
+            // })
         }
 
         // 4. REATIVAR o automóvel que o cliente FORNECEU

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const Entidade = require('../models/index');
+const { sequelize } = require("../db");
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -8,7 +9,13 @@ const handleServerError = (res, error) => {
 };
 
 exports.createFuncionario = async (req, res) => {
-    const { nome, telefone, usuario, senha } = req.body;
+    const { nome, telefone, usuario, senha, role } = req.body;
+
+    if (!['gerente', 'vendedor'].includes(role)) {
+        return res.status(400).send({ erro: true, mensagemErro: "O cargo deve ser 'gerente' ou 'vendedor'." });
+    }
+
+    const t = await sequelize.transaction();
 
     try {
         // Gera um "sal" e cria o hash da senha
@@ -21,19 +28,24 @@ exports.createFuncionario = async (req, res) => {
             usuario,
             senha: senhaHash, // Salva a senha hasheada
             data_cadastro: new Date()
-        });
+        }, { transaction: t });
 
         // IMPORTANTE: Após criar o funcionário, você precisa associá-lo
         // a Gerente ou Vendedor, salvando o novo ID na tabela correspondente.
-        const { role } = req.body; //(onde role é 'gerente' ou 'vendedor')
+
         if (role === 'gerente') {
-            await Entidade.Gerente.create({ id: novoFuncionario?.dataValues.id });
+            await Entidade.Gerente.create({ funcionarioId: novoFuncionario?.dataValues.id }, { transaction: t });
         } else {
-            await Entidade.Vendedor.create({ id: novoFuncionario?.dataValues.id });
+            await Entidade.Vendedor.create({ funcionarioId: novoFuncionario?.dataValues.id }, { transaction: t });
         }
 
-        res.status(201).send(novoFuncionario);
+        await t.commit();
+
+        const { senha: _, ...funcionarioSemSenha } = novoFuncionario.get({ plain: true });
+
+        res.status(201).send(funcionarioSemSenha);
     } catch (error) {
+        await t.rollback();
         handleServerError(res, error);
     }
 };

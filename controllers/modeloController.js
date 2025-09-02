@@ -72,3 +72,16 @@ exports.updateModelo = async (req, res) => {
         handleServerError(res, erro);
     }
 };
+
+exports.getModelosByMarca = async (req, res) => {
+    const marcaId = req.params.marcaId;
+    try {
+        const modelos = await Entidade.Modelo.findAll({
+            where: { marcaId: marcaId },
+            order: [['nome', 'ASC']] // Opcional: ordena os modelos por nome
+        });
+        res.status(200).send(modelos);
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};
