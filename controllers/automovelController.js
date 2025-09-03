@@ -118,6 +118,10 @@ exports.getAutomovelByRenavam = async (req, res) => {
 
     try {
 
+        // if (!renavam || typeof renavam !== "string" || renavam.trim() === "" || renavam === "" || renavam === undefined) {
+        //     return res.status(400).send({ erro: true, mensagemErro: "Informe o renavam" });
+        // }
+
         const automovel = await Entidade.Automovel.findOne({
             where: {
                 renavam: renavam
@@ -125,11 +129,10 @@ exports.getAutomovelByRenavam = async (req, res) => {
         });
 
         if (automovel) {
-
             return res.status(200).send(automovel);
         }
         else {
-            return res.status(404).send({ erro: true, mensagemErro: 'Automóvel não encontrado' });;
+            return res.status(404).send({ erro: true, mensagemErro: 'Automóvel não encontrado' });
         }
     } catch (erro) {
         handleServerError(res, erro);
