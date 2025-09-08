@@ -102,6 +102,9 @@ const funcionarioRoutes = require('./routes/funcionarioRoutes');
 // ROTAS - VENDEDOR
 const vendedorRoutes = require('./routes/vendedorRoutes');
 
+// ROTAS - RELATOIRO
+const relatorioRoutes = require('./routes/relatorioRoutes');
+
 app.use(express.json());
 app.use('/api/automovel', automovelRoutes);
 app.use('/api/marca', marcaRoutes);
@@ -121,6 +124,7 @@ app.use('/api/manutencao', manutencaoRoutes);
 app.use('/api/login', loginRoutes);
 app.use('/api/funcionario', funcionarioRoutes);
 app.use('/api/vendedor', vendedorRoutes);
+app.use('/api/relatorio', relatorioRoutes);
 
 
 const path = require("path");
