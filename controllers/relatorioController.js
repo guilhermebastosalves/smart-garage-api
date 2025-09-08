@@ -21,6 +21,15 @@ exports.gerarRelatorio = async (req, res) => {
                 { model: Entidade.Cliente, as: "cliente" }
             );
             break;
+        case 'Compra':
+            EntidadeSelecionada = Entidade.Compra;
+            dateColumnName = 'data'; // Venda usa a coluna 'data'
+            // Venda se relaciona com Automovel e Cliente
+            includeOptions.push(
+                { model: Entidade.Automovel, as: "automovel" },
+                { model: Entidade.Cliente, as: "cliente" }
+            );
+            break;
         case 'Troca':
             EntidadeSelecionada = Entidade.Troca;
             dateColumnName = 'data'; // Troca usa a coluna 'data'
