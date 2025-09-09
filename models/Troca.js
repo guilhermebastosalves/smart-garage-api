@@ -23,6 +23,10 @@ const Troca = db.sequelize.define("troca", {
         type: db.Sequelize.DECIMAL(10, 2),
         allowNull: true
     },
+    valor_aquisicao: {
+        type: db.Sequelize.DECIMAL(10, 2),
+        allowNull: true
+    },
     automovel_fornecido: {
         type: db.Sequelize.INTEGER,
         allowNull: false

@@ -27,7 +27,8 @@ exports.createTroca = async (req, res) => {
         clienteId,
         funcionarioId,
         automovelId,
-        automovel_fornecido
+        automovel_fornecido,
+        valor_aquisicao
     } = req.body;
 
     const troca = await Entidade.Troca.create({
@@ -39,7 +40,8 @@ exports.createTroca = async (req, res) => {
         clienteId: clienteId,
         funcionarioId: funcionarioId,
         automovelId: automovelId,
-        automovel_fornecido: automovel_fornecido
+        automovel_fornecido: automovel_fornecido,
+        valor_aquisicao: valor_aquisicao
     });
 
     return res.status(201).send(troca);
