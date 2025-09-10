@@ -6,6 +6,11 @@ const Vendedor = db.sequelize.define('vendedor', {
         primaryKey: true,
         allowNull: false,
         autoIncrement: true
+    },
+    ativo: {
+        type: db.Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     }
 });
 
