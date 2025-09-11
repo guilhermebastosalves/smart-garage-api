@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+require('dotenv').config();
 
 // IMPORTAR MODELOS DO BANCO DE DADOS
 const DB = require('./models/index');
@@ -40,11 +41,10 @@ sequelize.sync({ alter: true }).then(async () => {
 const cors = require('cors');
 app.use(cors());
 
-// Ou especifique só para seu front:
-// app.use(cors({ origin: 'http://localhost:5173' }));
-
 
 // BODYPARSER
+app.use(express.json());
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -105,7 +105,7 @@ const vendedorRoutes = require('./routes/vendedorRoutes');
 // ROTAS - RELATOIRO
 const relatorioRoutes = require('./routes/relatorioRoutes');
 
-app.use(express.json());
+
 app.use('/api/automovel', automovelRoutes);
 app.use('/api/marca', marcaRoutes);
 app.use('/api/modelo', modeloRoutes);

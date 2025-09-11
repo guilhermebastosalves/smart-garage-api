@@ -2,6 +2,10 @@ const jwt = require('jsonwebtoken');
 
 // 1. Middleware para verificar a validade do token JWT
 const verifyToken = (req, res, next) => {
+
+    // console.log('--- CABEÇALHOS RECEBIDOS PELO BACKEND ---');
+    // console.log(req.headers['authorization']);
+
     // Pega o token do header da requisição (formato: "Bearer TOKEN")
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -22,6 +26,7 @@ const verifyToken = (req, res, next) => {
         // Passa para a próxima função na cadeia (seja outro middleware ou o controller)
         next();
     } catch (error) {
+        console.error('Erro de verificação do token:', error.name, error.message);
         // 400 Bad Request: O token fornecido é inválido (expirado, malformado, etc.)
         return res.status(400).send({ mensagem: "Token inválido." });
     }

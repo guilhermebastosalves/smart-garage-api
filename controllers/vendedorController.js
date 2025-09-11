@@ -1,32 +1,53 @@
 const { where } = require('sequelize');
 const Entidade = require('../models/index');
+const bcrypt = require('bcryptjs');
 
 exports.findByFuncionarioid = async (req, res) => {
 
-    const { funcionarioId } = req.params.funcionarioId;
+    const { id } = req.params;
 
-    const vendedor = await Entidade.Vendedor.findOne({
-        where: {
-            funcionarioId: funcionarioId
+    try {
+        const vendedor = await Entidade.Vendedor.findOne({
+            where: {
+                funcionarioId: id
+            }
+        });
+
+        if (!vendedor) {
+            return res.status(404).send({ erro: true, mensagemErro: 'Vendedor não encontrado' });
         }
-    });
 
-    if (!vendedor) {
-        return res.status(404).send({ erro: true, mensagemErro: 'Vendedor não encontrado' });
+        // CORREÇÃO 2: Retornar a variável correta ('vendedor') e o status HTTP 200 (OK)
+        return res.status(200).send(vendedor);
+
+    } catch (error) {
+        // Adicionado um try-catch para lidar com possíveis erros
+        console.error("Erro ao buscar vendedor por ID de funcionário:", error);
+        return res.status(500).send({ mensagem: "Erro interno ao buscar vendedor." });
     }
-
-    return res.status(201).send(gerente);
 }
 
 // Criar um novo Vendedor (Funcionario + Vendedor)
 exports.create = async (req, res) => {
-    const { nome, usuario, senha } = req.body;
+    const { nome, usuario, senha, email, telefone } = req.body;
 
-    if (!nome || !usuario || !senha) {
+    if (!nome || !usuario || !senha || !email || !telefone) {
         return res.status(400).send({ mensagem: "Todos os campos são obrigatórios." });
     }
 
     try {
+        // Verifica se já existe email
+        const emailExistente = await Entidade.Funcionario.findOne({ where: { email } });
+        if (emailExistente) {
+            return res.status(409).send({ mensagem: "Este e-mail já está em uso." });
+        }
+
+        // Verifica se já existe usuário
+        const usuarioExistente = await Entidade.Funcionario.findOne({ where: { usuario } });
+        if (usuarioExistente) {
+            return res.status(409).send({ mensagem: "Este nome de usuário já está em uso." });
+        }
+
         // Criptografa a senha antes de salvar
         const senhaHash = await bcrypt.hash(senha, 10);
 
@@ -34,6 +55,9 @@ exports.create = async (req, res) => {
         const funcionario = await Entidade.Funcionario.create({
             nome,
             usuario,
+            email,
+            telefone,
+            data_cadastro: new Date(),
             senha: senhaHash,
             ativo: true // Vendedores já começam ativos
         });
@@ -45,10 +69,8 @@ exports.create = async (req, res) => {
 
         res.status(201).send({ mensagem: "Vendedor cadastrado com sucesso!" });
     } catch (error) {
-        if (error.name === 'SequelizeUniqueConstraintError') {
-            return res.status(409).send({ mensagem: "Este nome de usuário já está em uso." });
-        }
         res.status(500).send({ mensagem: "Erro ao cadastrar vendedor.", error });
+        console.log(error)
     }
 };
 

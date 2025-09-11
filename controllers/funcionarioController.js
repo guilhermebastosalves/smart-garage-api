@@ -9,7 +9,7 @@ const handleServerError = (res, error) => {
 };
 
 exports.createFuncionario = async (req, res) => {
-    const { nome, telefone, usuario, senha, role } = req.body;
+    const { nome, telefone, usuario, senha, role, email } = req.body;
 
     if (!['gerente', 'vendedor'].includes(role)) {
         return res.status(400).send({ erro: true, mensagemErro: "O cargo deve ser 'gerente' ou 'vendedor'." });
@@ -27,7 +27,8 @@ exports.createFuncionario = async (req, res) => {
             telefone,
             usuario,
             senha: senhaHash, // Salva a senha hasheada
-            data_cadastro: new Date()
+            data_cadastro: new Date(),
+            email
         }, { transaction: t });
 
         // IMPORTANTE: Após criar o funcionário, você precisa associá-lo

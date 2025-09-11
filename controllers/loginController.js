@@ -1,8 +1,11 @@
 // src/controllers/loginController.js
-
+const { Op } = require("sequelize");
+const { Sequelize } = require("../db");
 const Entidade = require("../models/index");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const emailService = require('../services/emailService');
 
 // Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
@@ -81,5 +84,69 @@ exports.login = async (req, res) => {
     } catch (error) {
         console.error("Erro no login:", error);
         res.status(500).send({ erro: 'Um erro ocorreu no servidor.' });
+    }
+};
+
+exports.solicitarResetSenha = async (req, res) => {
+    const { usuario } = req.body;
+    console.log(usuario);
+
+    try {
+        const funcionario = await Entidade.Funcionario.findOne({ where: { usuario } });
+
+        if (!funcionario) {
+            // Enviamos uma mensagem de sucesso mesmo que o usuário não exista
+            // para não revelar quais usuários estão cadastrados no sistema.
+            return res.status(200).send({ mensagem: "Se um usuário com este nome existir, um e-mail de redefinição foi enviado." });
+        }
+
+        // Gera um token aleatório e seguro
+        const token = crypto.randomBytes(20).toString('hex');
+
+        // Define a data de expiração para 1 hora a partir de agora
+        const expires = new Date(Date.now() + 3600000); // 1 hora
+
+        // Salva o token e a data de expiração no registro do funcionário
+        funcionario.resetPasswordToken = token;
+        funcionario.resetPasswordExpires = expires;
+        await funcionario.save();
+
+        // Envia o e-mail
+        await emailService.enviarEmailResetSenha(funcionario.email, token);
+
+        res.status(200).send({ mensagem: "Se um usuário com este nome existir, um e-mail de redefinição foi enviado." });
+
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};
+
+exports.resetarSenha = async (req, res) => {
+    const { token } = req.params;
+    const { senha } = req.body;
+
+    try {
+        const funcionario = await Entidade.Funcionario.findOne({
+            where: {
+                resetPasswordToken: token,
+                resetPasswordExpires: { [Sequelize.Op.gt]: Date.now() } // Verifica se o token não expirou
+            }
+        });
+
+        if (!funcionario) {
+            return res.status(400).send({ mensagem: "Token de redefinição inválido ou expirado." });
+        }
+
+        // Token válido, agora atualizamos a senha
+        const senhaHash = await bcrypt.hash(senha, 10);
+        funcionario.senha = senhaHash;
+        funcionario.resetPasswordToken = null; // Invalida o token
+        funcionario.resetPasswordExpires = null;
+        await funcionario.save();
+
+        res.status(200).send({ mensagem: "Senha redefinida com sucesso!" });
+
+    } catch (error) {
+        handleServerError(res, error);
     }
 };

@@ -15,6 +15,11 @@ const Funcionario = db.sequelize.define('funcionario', {
         type: db.Sequelize.STRING(50),
         allowNull: false
     },
+    email: {
+        type: db.Sequelize.STRING(60),
+        allowNull: false,
+        unique: 'email_funcionario_unique_idx',
+    },
     senha: {
         type: db.Sequelize.STRING(60),
         allowNull: false
@@ -32,6 +37,16 @@ const Funcionario = db.sequelize.define('funcionario', {
         type: db.Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: true
+    },
+    // NOVO: Campo para o token de redefinição
+    resetPasswordToken: {
+        type: db.Sequelize.STRING,
+        allowNull: true
+    },
+    // NOVO: Campo para a expiração do token
+    resetPasswordExpires: {
+        type: db.Sequelize.DATE,
+        allowNull: true
     }
 });
 
