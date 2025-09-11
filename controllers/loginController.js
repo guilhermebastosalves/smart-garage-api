@@ -89,7 +89,6 @@ exports.login = async (req, res) => {
 
 exports.solicitarResetSenha = async (req, res) => {
     const { usuario } = req.body;
-    console.log(usuario);
 
     try {
         const funcionario = await Entidade.Funcionario.findOne({ where: { usuario } });
