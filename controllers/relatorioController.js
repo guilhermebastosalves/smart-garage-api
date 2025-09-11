@@ -5,6 +5,66 @@ const { Op } = require("sequelize");
 exports.gerarRelatorio = async (req, res) => {
     const { tipo, dataInicio, dataFim } = req.query;
 
+    // --- LÓGICA ESPECIAL PARA O RELATÓRIO DE VENDAS ---
+    if (tipo === 'Venda') {
+        try {
+            const vendas = await Entidade.Venda.findAll({
+                where: { data: { [Op.between]: [new Date(dataInicio), new Date(dataFim)] } },
+                include: [
+                    { model: Entidade.Automovel, as: 'automovel' },
+                    { model: Entidade.Cliente, as: 'cliente' }
+                ],
+                order: [['data', 'DESC']]
+            });
+
+            const relatorioEnriquecido = [];
+
+            for (const venda of vendas) {
+                let custo = 0;
+                let lucro = 0;
+                const origem = venda.automovel?.origem;
+
+                if (origem === 'Compra') {
+                    const compra = await Entidade.Compra.findOne({ where: { automovelId: venda.automovelId } });
+                    custo = parseFloat(compra?.valor || 0);
+                    comissao = parseFloat(venda.comissao);
+                    lucro = parseFloat(venda.valor) - custo - comissao;
+
+                } else if (origem === 'Troca') {
+                    const troca = await Entidade.Troca.findOne({ where: { automovelId: venda.automovelId } });
+                    // O "custo" de um carro de troca é o valor que foi avaliado na entrada.
+                    // Assumimos que este valor está no próprio registro do automóvel.
+                    custo = parseFloat(troca.valor_aquisicao || 0);
+                    comissao = parseFloat(venda.comissao);
+                    lucro = parseFloat(venda.valor) - custo - comissao;
+
+                } else if (origem === 'Consignacao') {
+                    const consignacao = await Entidade.Consignacao.findOne({ where: { automovelId: venda.automovelId } });
+                    // O "custo" para a loja é o valor a ser repassado ao proprietário.
+                    // const valorRepasse = parseFloat(consignacao?.valor || 0);
+                    // O lucro é a diferença entre o valor da venda e o valor de repasse.
+                    // lucro = parseFloat(venda.valor) - valorRepasse;
+                    comissao = parseFloat(venda.comissao);
+                    lucro = parseFloat(consignacao?.valor || 0) - comissao;
+                }
+
+                // Adiciona o objeto enriquecido ao resultado final
+                relatorioEnriquecido.push({
+                    ...venda.toJSON(), // Converte o objeto Sequelize para JSON simples
+                    custo,
+                    lucro,
+                    origem
+                });
+            }
+
+            return res.status(200).send(relatorioEnriquecido);
+
+        } catch (error) {
+            console.error("Erro detalhado ao gerar relatório de vendas:", error);
+            return res.status(500).send({ mensagem: "Erro ao gerar relatório de vendas.", error: error.message });
+        }
+    }
+
     let EntidadeSelecionada;
     let includeOptions = []; // Array para as associações (include)
     let dateColumnName; // Nome da coluna de data a ser filtrada
@@ -12,15 +72,15 @@ exports.gerarRelatorio = async (req, res) => {
 
     // Seleciona o Model do Sequelize com base no tipo
     switch (tipo) {
-        case 'Venda':
-            EntidadeSelecionada = Entidade.Venda;
-            dateColumnName = 'data'; // Venda usa a coluna 'data'
-            // Venda se relaciona com Automovel e Cliente
-            includeOptions.push(
-                { model: Entidade.Automovel, as: "automovel" },
-                { model: Entidade.Cliente, as: "cliente" }
-            );
-            break;
+        // case 'Venda':
+        //     EntidadeSelecionada = Entidade.Venda;
+        //     dateColumnName = 'data'; // Venda usa a coluna 'data'
+        //     // Venda se relaciona com Automovel e Cliente
+        //     includeOptions.push(
+        //         { model: Entidade.Automovel, as: "automovel" },
+        //         { model: Entidade.Cliente, as: "cliente" }
+        //     );
+        //     break;
         case 'Compra':
             EntidadeSelecionada = Entidade.Compra;
             dateColumnName = 'data'; // Venda usa a coluna 'data'

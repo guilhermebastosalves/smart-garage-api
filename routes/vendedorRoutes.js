@@ -14,7 +14,7 @@ router.get('/', authMiddleware.verifyToken, authMiddleware.isGerente, vendedorCo
 router.patch('/:id/status', authMiddleware.verifyToken, authMiddleware.isGerente, vendedorController.updateStatus);
 
 // Opcional: Rota para atualizar os dados de um vendedor (nome, usuário, etc.)
-router.put('/:id', authMiddleware.verifyToken, authMiddleware.isGerente, vendedorController.update);
+// router.put('/:id', authMiddleware.verifyToken, authMiddleware.isGerente, vendedorController.update);
 
 
 module.exports = router;

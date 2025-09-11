@@ -21,29 +21,24 @@ exports.login = async (req, res) => {
         // 1. Encontrar o funcionário pelo nome de usuário
         const funcionario = await Entidade.Funcionario.findOne({ where: { usuario } });
         if (!funcionario) {
-            return res.status(404).send({ mensagem: "Usuário não encontrado." });
+            return res.status(404).send({ mensagem: "Usuário ou senha inválida." });
+        }
+
+        // NOVO: VERIFICA SE O FUNCIONÁRIO ESTÁ ATIVO
+        if (!funcionario.ativo) {
+            // Retorna o erro 403 Forbidden (Proibido), pois o usuário existe mas não tem permissão para logar.
+            return res.status(403).send({ mensagem: "Este usuário está inativo." });
         }
 
         // 2. Comparar a senha enviada com a senha hasheada no banco
         const senhaValida = await bcrypt.compare(senha, funcionario?.senha);
 
         if (!senhaValida) {
-            return res.status(401).send({ mensagem: "Senha inválida." });
+            return res.status(401).send({ mensagem: "Usuário ou senha inválida." });
         }
 
         // 3. Descobrir o papel (role) do funcionário
         let role = null;
-
-
-        // const gerente = await Entidade.Gerente.findByPk(funcionario?.id);
-        // if (gerente) {
-        //     role = 'gerente';
-        // } else {
-        //     const vendedor = await Entidade.Vendedor.findByPk(funcionario?.id);
-        //     if (vendedor) {
-        //         role = 'vendedor';
-        //     }
-        // }
 
         const gerente = await Entidade.Gerente.findOne({
             where: { funcionarioId: funcionario.id }

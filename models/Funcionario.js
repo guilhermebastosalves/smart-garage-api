@@ -27,6 +27,11 @@ const Funcionario = db.sequelize.define('funcionario', {
         type: db.Sequelize.STRING(50),
         allowNull: false,
         unique: 'usuario_unique_idx'
+    },
+    ativo: {
+        type: db.Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
     }
 });
 
