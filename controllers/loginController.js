@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
         // 1. Encontrar o funcionário pelo nome de usuário
         const funcionario = await Entidade.Funcionario.findOne({ where: { usuario } });
         if (!funcionario) {
-            return res.status(404).send({ mensagem: "Usuário ou senha inválida." });
+            return res.status(404).send({ mensagem: "Usuário ou senha inválidos." });
         }
 
         // NOVO: VERIFICA SE O FUNCIONÁRIO ESTÁ ATIVO
@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
         const senhaValida = await bcrypt.compare(senha, funcionario?.senha);
 
         if (!senhaValida) {
-            return res.status(401).send({ mensagem: "Usuário ou senha inválida." });
+            return res.status(401).send({ mensagem: "Usuário ou senha inválidos." });
         }
 
         // 3. Descobrir o papel (role) do funcionário
