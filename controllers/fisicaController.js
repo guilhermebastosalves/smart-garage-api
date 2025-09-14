@@ -85,37 +85,34 @@ exports.createFisica = async (req, res) => {
 
 
 exports.verificarDuplicidade = async (req, res) => {
-    const { rg, cpf } = req.body;
+    // 1. Recebe o ID do cliente que está sendo editado (se houver)
+    const { rg, cpf, idClienteAtual } = req.body;
 
     try {
         const condicoes = [];
+        if (cpf) condicoes.push({ cpf: cpf });
+        if (rg) condicoes.push({ rg: rg });
 
-        // Adiciona a condição do CPF somente se ele foi enviado
-        if (cpf) {
-            condicoes.push({ cpf: cpf });
-        }
-
-        // Adiciona a condição do RG somente se ele foi enviado
-        if (rg) {
-            condicoes.push({ rg: rg });
-        }
-
-        // Se nenhum dado foi enviado, não há o que verificar
         if (condicoes.length === 0) {
             return res.status(200).send({ erro: false });
         }
 
-        // Executa a busca com as condições válidas
+        // 2. Monta a cláusula 'where' principal
+        const whereClause = { [Op.or]: condicoes };
+
+        // 3. Se um ID de cliente atual foi fornecido (modo de edição),
+        //    adiciona uma condição para EXCLUIR esse cliente da busca.
+        if (idClienteAtual) {
+            whereClause.clienteId = { [Op.ne]: idClienteAtual }; // Op.ne = Not Equal (Não é igual a)
+        }
+
         const existente = await Entidade.Fisica.findOne({
-            where: {
-                [Op.or]: condicoes
-            }
+            where: whereClause
         });
 
         if (existente) {
-            // Descobre qual campo causou a duplicidade para uma mensagem clara
             const campo = existente.cpf === cpf ? 'CPF' : 'RG';
-            return res.status(409).send({ erro: true, mensagemErro: `Já existe um cliente com este ${campo}.` });
+            return res.status(409).send({ erro: true, mensagemErro: `Já existe outro cliente com este ${campo}.` });
         }
 
         return res.status(200).send({ erro: false });

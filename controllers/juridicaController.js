@@ -83,75 +83,34 @@ exports.createJuridica = async (req, res) => {
     }
 };
 
-// exports.verificarDuplicidade = async (req, res) => {
-
-//     const { cnpj, razao_social } = req.body;
-
-//     const condicoes = [];
-
-//     const cnpjExistente = await Entidade.Juridica.findOne({
-//         where: {
-//             [Op.or]: [{ cnpj }]
-//         }
-//     });
-
-//     if (razao_social) {
-//         condicoes.push({ razao_social: razao_social });
-//     }
-
-//     const razaoExistente = await Entidade.Juridica.findOne({
-//         where: {
-//             [Op.or]: [{ razao_social }]
-//         }
-//     });
-
-//     if (cnpjExistente) {
-//         return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com esse cnpj.' });
-//     }
-
-//     if (razaoExistente) {
-//         return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com essa razão social.' });
-
-//     }
-
-//     return res.status(200).send({ erro: false });
-// };
-
-
 exports.verificarDuplicidade = async (req, res) => {
-    const { cnpj, razao_social } = req.body;
+    // 1. Recebe o ID do cliente que está sendo editado
+    const { cnpj, razao_social, idClienteAtual } = req.body;
 
     try {
-        // 1. Cria um array para as condições de busca
         const condicoes = [];
+        if (cnpj) condicoes.push({ cnpj: cnpj });
+        if (razao_social) condicoes.push({ razao_social: razao_social });
 
-        // 2. Adiciona a condição do CNPJ somente se ele foi enviado
-        if (cnpj) {
-            condicoes.push({ cnpj: cnpj });
-        }
-
-        // 3. Adiciona a condição da Razão Social somente se ela foi enviada (e não é vazia)
-        if (razao_social) {
-            condicoes.push({ razao_social: razao_social });
-        }
-
-        // Se nenhuma condição foi formada (nenhum dado enviado), não há o que verificar
         if (condicoes.length === 0) {
             return res.status(200).send({ erro: false });
         }
 
-        // 4. Executa a busca apenas com as condições válidas
+        // 2. Monta a cláusula 'where' principal
+        const whereClause = { [Op.or]: condicoes };
+
+        // 3. Exclui o cliente atual da busca se estiver no modo de edição
+        if (idClienteAtual) {
+            whereClause.clienteId = { [Op.ne]: idClienteAtual };
+        }
+
         const existente = await Entidade.Juridica.findOne({
-            where: {
-                [Op.or]: condicoes // Usa o array de condições dinâmico
-            }
+            where: whereClause
         });
 
         if (existente) {
-            // Descobre qual campo causou a duplicidade para dar uma mensagem clara
             const campo = existente.cnpj === cnpj ? 'CNPJ' : 'Razão Social';
-            // console.log(campo)
-            return res.status(409).send({ erro: true, mensagemErro: `Campo ${campo} duplicado, já existe um cliente com esse registro.` });
+            return res.status(409).send({ erro: true, mensagemErro: `Já existe outro cliente com este ${campo}.` });
         }
 
         return res.status(200).send({ erro: false });
