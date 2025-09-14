@@ -14,7 +14,7 @@ const Fisica = db.sequelize.define('fisica', {
     },
     rg: {
         type: db.Sequelize.STRING(13),
-        allowNull: false,
+        defaultValue: null,
         unique: 'rg_unique_idx'
     }
 });

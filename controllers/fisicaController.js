@@ -62,12 +62,14 @@ exports.createFisica = async (req, res) => {
     var rg = req.body.rg;
     var clienteId = req.body.clienteId;
 
+    const rgParaSalvar = rg ? rg : null;
+
 
     try {
         const fisica = await Entidade.Fisica.create({
 
             cpf: cpf,
-            rg: rg,
+            rg: rgParaSalvar,
             clienteId: clienteId
         });
 
@@ -81,29 +83,44 @@ exports.createFisica = async (req, res) => {
 
 };
 
-exports.verificarDuplicidade = async (req, res) => {
 
+exports.verificarDuplicidade = async (req, res) => {
     const { rg, cpf } = req.body;
 
-    const rgExistente = await Entidade.Fisica.findOne({
-        where: {
-            [Op.or]: [{ rg }]
+    try {
+        const condicoes = [];
+
+        // Adiciona a condição do CPF somente se ele foi enviado
+        if (cpf) {
+            condicoes.push({ cpf: cpf });
         }
-    });
 
-    const cpfExistente = await Entidade.Fisica.findOne({
-        where: {
-            [Op.or]: [{ cpf }]
+        // Adiciona a condição do RG somente se ele foi enviado
+        if (rg) {
+            condicoes.push({ rg: rg });
         }
-    });
 
-    if (rgExistente) {
-        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com esse rg.' });
+        // Se nenhum dado foi enviado, não há o que verificar
+        if (condicoes.length === 0) {
+            return res.status(200).send({ erro: false });
+        }
+
+        // Executa a busca com as condições válidas
+        const existente = await Entidade.Fisica.findOne({
+            where: {
+                [Op.or]: condicoes
+            }
+        });
+
+        if (existente) {
+            // Descobre qual campo causou a duplicidade para uma mensagem clara
+            const campo = existente.cpf === cpf ? 'CPF' : 'RG';
+            return res.status(409).send({ erro: true, mensagemErro: `Já existe um cliente com este ${campo}.` });
+        }
+
+        return res.status(200).send({ erro: false });
+
+    } catch (error) {
+        handleServerError(res, error);
     }
-
-    if (cpfExistente) {
-        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um cliente com esse cpf.' });
-    }
-
-    return res.status(200).send({ erro: false });
 };

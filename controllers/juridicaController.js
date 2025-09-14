@@ -67,8 +67,6 @@ exports.createJuridica = async (req, res) => {
 
     const razaoSocialParaSalvar = razao_social ? razao_social : null;
 
-    console.log(razaoSocialParaSalvar)
-
     try {
 
         const juridica = await Entidade.Juridica.create({
