@@ -110,7 +110,7 @@ exports.verificarDuplicidade = async (req, res) => {
 
         if (existente) {
             const campo = existente.cnpj === cnpj ? 'CNPJ' : 'Razão Social';
-            return res.status(409).send({ erro: true, mensagemErro: `Já existe outro cliente com este ${campo}.` });
+            return res.status(409).send({ erro: true, mensagemErro: `Já existe outro cliente com este registro de ${campo}.` });
         }
 
         return res.status(200).send({ erro: false });

@@ -23,7 +23,6 @@ exports.createAutomovel = async (req, res) => {
     const {
         ano_fabricacao,
         ano_modelo,
-        ativo,
         cor,
         combustivel,
         km,
@@ -37,6 +36,7 @@ exports.createAutomovel = async (req, res) => {
 
     const file = req.file;
     const imagemPath = file ? file.path : null;
+    const placaUpperCase = placa ? placa.toUpperCase() : null;
 
 
     try {
@@ -44,12 +44,12 @@ exports.createAutomovel = async (req, res) => {
 
             ano_fabricacao: ano_fabricacao,
             ano_modelo: ano_modelo,
-            ativo: ativo,
+            ativo: true,
             cor: cor,
             combustivel: combustivel,
             km: km,
             origem: origem,
-            placa: placa,
+            placa: placaUpperCase,
             renavam: renavam,
             valor: valor,
             marcaId: marcaId,
@@ -67,30 +67,54 @@ exports.createAutomovel = async (req, res) => {
 }
 
 exports.verificarDuplicidade = async (req, res) => {
+    // 1. Recebe o ID do automóvel que está sendo editado (se houver)
+    const { placa, renavam, idAutomovelAtual } = req.body;
 
-    const { placa, renavam } = req.body;
+    try {
+        const condicoes = [];
 
-    const placaExistente = await Entidade.Automovel.findOne({
-        where: {
-            [Op.or]: [{ placa }]
+        // Adiciona as condições de busca somente se os campos foram enviados
+        if (placa) condicoes.push({ placa: placa });
+        if (renavam) condicoes.push({ renavam: renavam });
+
+        // Se nenhum dado foi enviado, não há o que verificar
+        if (condicoes.length === 0) {
+            return res.status(200).send({ erro: false });
         }
-    });
 
-    const renavamExistente = await Entidade.Automovel.findOne({
-        where: {
-            [Op.or]: [{ renavam }]
+        // 2. Monta a cláusula 'where' principal para buscar por placa OU renavam
+        const whereClause = {
+            [Op.or]: condicoes
+        };
+
+        // 3. Se um ID de automóvel atual foi fornecido (modo de edição),
+        //    adiciona uma condição para EXCLUIR esse automóvel da busca.
+        if (idAutomovelAtual) {
+            whereClause.id = { [Op.ne]: idAutomovelAtual }; // Op.ne = Not Equal (Não é igual a)
         }
-    });
 
-    if (placaExistente) {
-        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um automóvel com essa placa.' });
+        // 4. Executa uma única consulta ao banco de dados
+        const existente = await Entidade.Automovel.findOne({
+            where: whereClause
+        });
+
+        if (existente) {
+            if (placa && existente.placa && existente.placa.trim().toUpperCase() === placa.trim().toUpperCase()) {
+                return res.status(409).send({ erro: true, mensagemErro: 'Já existe outro automóvel com este registro de Placa.' });
+            }
+            if (renavam && existente.renavam === renavam) {
+                return res.status(409).send({ erro: true, mensagemErro: 'Já existe outro automóvel com este registro de Renavam.' });
+            }
+            // Caso raro: ambos diferentes, mas caiu aqui (não deveria acontecer)
+            return res.status(409).send({ erro: true, mensagemErro: 'Já existe outro automóvel com este registro.' });
+        }
+
+        // Se não encontrou nenhum outro automóvel, a verificação passa
+        return res.status(200).send({ erro: false });
+
+    } catch (error) {
+        handleServerError(res, error);
     }
-
-    if (renavamExistente) {
-        return res.status(409).send({ erro: true, mensagemErro: 'Já existe um automóvel com esse renavam.' });
-    }
-
-    return res.status(200).send({ erro: false });
 };
 
 exports.getAutomovelById = async (req, res) => {
