@@ -147,30 +147,35 @@ exports.update = async (req, res) => {
             await Entidade.Juridica.update(juridica, { where: { clienteId: id }, transaction: t });
         }
 
-        // Lógica para Endereço, Cidade e Estado (pode precisar criar ou atualizar)
-        const { id: estadoId, ...estadoData } = estado;
-        const { id: cidadeId, ...cidadeData } = cidade;
+        if (endereco && cidade && estado) {
 
-        const [estadoObj] = await Entidade.Estado.findOrCreate({
-            where: { uf: estado.uf },
-            defaults: estadoData, // Usa o objeto sem o 'id'
-            transaction: t
-        });
+            // 2. Atualiza Estado e Cidade (sem alterações aqui)
+            if (estado && estado.id) {
+                await Entidade.Estado.update({ uf: estado.uf }, { where: { id: estado.id }, transaction: t });
+            }
+            if (cidade && cidade.id) {
+                await Entidade.Cidade.update({ nome: cidade.nome }, { where: { id: cidade.id }, transaction: t });
+            }
 
-        const [cidadeObj] = await Entidade.Cidade.findOrCreate({
-            where: { nome: cidade.nome, estadoId: estadoObj.id },
-            defaults: { ...cidadeData, estadoId: estadoObj.id }, // Usa o objeto sem o 'id'
-            transaction: t
-        });
-
-        const [enderecoObj, enderecoCriado] = await Entidade.Endereco.findOrCreate({
-            where: { clienteId: id },
-            defaults: { ...endereco, clienteId: id, cidadeId: cidadeObj.id },
-            transaction: t
-        });
-
-        if (!enderecoCriado) {
-            await enderecoObj.update({ ...endereco, cidadeId: cidadeObj.id }, { transaction: t });
+            // 3. ATUALIZA o registo de Endereço existente pelo clienteId
+            // Garante que o objeto 'endereco' existe antes de tentar o update
+            if (endereco) {
+                await Entidade.Endereco.update(
+                    {
+                        // Dados a serem atualizados
+                        cep: endereco.cep,
+                        logradouro: endereco.logradouro,
+                        bairro: endereco.bairro,
+                        numero: endereco.numero,
+                        cidadeId: cidade.id // Garante que a chave estrangeira está correta
+                    },
+                    {
+                        // Condição para encontrar o registo a ser atualizado
+                        where: { clienteId: id },
+                        transaction: t
+                    }
+                );
+            }
         }
 
         // Se tudo deu certo, confirma a transação
