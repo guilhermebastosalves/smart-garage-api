@@ -85,7 +85,7 @@ exports.createFisica = async (req, res) => {
 
 
 exports.verificarDuplicidade = async (req, res) => {
-    // 1. Recebe o ID do cliente que está sendo editado (se houver)
+
     const { rg, cpf, idClienteAtual } = req.body;
 
     try {
@@ -97,11 +97,8 @@ exports.verificarDuplicidade = async (req, res) => {
             return res.status(200).send({ erro: false });
         }
 
-        // 2. Monta a cláusula 'where' principal
         const whereClause = { [Op.or]: condicoes };
 
-        // 3. Se um ID de cliente atual foi fornecido (modo de edição),
-        //    adiciona uma condição para EXCLUIR esse cliente da busca.
         if (idClienteAtual) {
             whereClause.clienteId = { [Op.ne]: idClienteAtual }; // Op.ne = Not Equal (Não é igual a)
         }

@@ -1,6 +1,6 @@
 const Entidade = require('../models/index');
 
-// Função auxiliar para lidar com erros
+
 const handleServerError = (res, error) => {
     console.error(error);
     res.status(500).send({ erro: 'Um erro ocorreu' });

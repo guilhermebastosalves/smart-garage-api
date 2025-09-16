@@ -38,12 +38,10 @@ const Funcionario = db.sequelize.define('funcionario', {
         allowNull: false,
         defaultValue: true
     },
-    // NOVO: Campo para o token de redefinição
     resetPasswordToken: {
         type: db.Sequelize.STRING,
         allowNull: true
     },
-    // NOVO: Campo para a expiração do token
     resetPasswordExpires: {
         type: db.Sequelize.DATE,
         allowNull: true

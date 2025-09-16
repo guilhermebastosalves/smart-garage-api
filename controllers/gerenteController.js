@@ -1,21 +1,6 @@
 const { where } = require('sequelize');
 const Entidade = require('../models/index');
 
-// exports.createGerente = async (req, res) => {
-
-//     const {
-//         id
-//     } = req.body;
-
-//     const gerente = await Entidade.Gerente.create({
-
-//         id: id
-//     });
-
-//     return res.status(201).send(gerente);
-// };
-
-
 exports.findByFuncionarioid = async (req, res) => {
 
     const { funcionarioId } = req.body;

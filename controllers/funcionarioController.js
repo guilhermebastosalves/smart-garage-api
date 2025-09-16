@@ -31,8 +31,6 @@ exports.createFuncionario = async (req, res) => {
             email
         }, { transaction: t });
 
-        // IMPORTANTE: Após criar o funcionário, você precisa associá-lo
-        // a Gerente ou Vendedor, salvando o novo ID na tabela correspondente.
 
         if (role === 'gerente') {
             await Entidade.Gerente.create({ funcionarioId: novoFuncionario?.dataValues.id }, { transaction: t });

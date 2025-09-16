@@ -1,11 +1,9 @@
 const Entidade = require('../models/index');
 const { Op } = require("sequelize");
 
-// Exemplo de controller no backend
 exports.gerarRelatorio = async (req, res) => {
     const { tipo, dataInicio, dataFim } = req.query;
 
-    // --- LÓGICA ESPECIAL PARA O RELATÓRIO DE VENDAS ---
     if (tipo === 'Venda') {
         try {
             const vendas = await Entidade.Venda.findAll({
@@ -32,25 +30,18 @@ exports.gerarRelatorio = async (req, res) => {
 
                 } else if (origem === 'Troca') {
                     const troca = await Entidade.Troca.findOne({ where: { automovelId: venda.automovelId } });
-                    // O "custo" de um carro de troca é o valor que foi avaliado na entrada.
-                    // Assumimos que este valor está no próprio registro do automóvel.
                     custo = parseFloat(troca.valor_aquisicao || 0);
                     comissao = parseFloat(venda.comissao);
                     lucro = parseFloat(venda.valor) - custo - comissao;
 
                 } else if (origem === 'Consignacao') {
                     const consignacao = await Entidade.Consignacao.findOne({ where: { automovelId: venda.automovelId } });
-                    // O "custo" para a loja é o valor a ser repassado ao proprietário.
-                    // const valorRepasse = parseFloat(consignacao?.valor || 0);
-                    // O lucro é a diferença entre o valor da venda e o valor de repasse.
-                    // lucro = parseFloat(venda.valor) - valorRepasse;
                     comissao = parseFloat(venda.comissao);
                     lucro = parseFloat(consignacao?.valor || 0) - comissao;
                 }
 
-                // Adiciona o objeto enriquecido ao resultado final
                 relatorioEnriquecido.push({
-                    ...venda.toJSON(), // Converte o objeto Sequelize para JSON simples
+                    ...venda.toJSON(),
                     custo,
                     lucro,
                     origem
@@ -66,25 +57,15 @@ exports.gerarRelatorio = async (req, res) => {
     }
 
     let EntidadeSelecionada;
-    let includeOptions = []; // Array para as associações (include)
-    let dateColumnName; // Nome da coluna de data a ser filtrada
+    let includeOptions = [];
+    let dateColumnName;
 
 
-    // Seleciona o Model do Sequelize com base no tipo
     switch (tipo) {
-        // case 'Venda':
-        //     EntidadeSelecionada = Entidade.Venda;
-        //     dateColumnName = 'data'; // Venda usa a coluna 'data'
-        //     // Venda se relaciona com Automovel e Cliente
-        //     includeOptions.push(
-        //         { model: Entidade.Automovel, as: "automovel" },
-        //         { model: Entidade.Cliente, as: "cliente" }
-        //     );
-        //     break;
+
         case 'Compra':
             EntidadeSelecionada = Entidade.Compra;
-            dateColumnName = 'data'; // Venda usa a coluna 'data'
-            // Venda se relaciona com Automovel e Cliente
+            dateColumnName = 'data';
             includeOptions.push(
                 { model: Entidade.Automovel, as: "automovel" },
                 { model: Entidade.Cliente, as: "cliente" }
@@ -92,8 +73,7 @@ exports.gerarRelatorio = async (req, res) => {
             break;
         case 'Troca':
             EntidadeSelecionada = Entidade.Troca;
-            dateColumnName = 'data'; // Troca usa a coluna 'data'
-            // Troca se relaciona com Automovel e Cliente
+            dateColumnName = 'data';
             includeOptions.push(
                 { model: Entidade.Automovel, as: "automovel" },
                 { model: Entidade.Cliente, as: "cliente" }
@@ -101,14 +81,12 @@ exports.gerarRelatorio = async (req, res) => {
             break;
         case 'Gasto':
             EntidadeSelecionada = Entidade.Gasto;
-            dateColumnName = 'data'; // Gasto usa a coluna 'data'
-            // Gasto se relaciona apenas com Automovel
+            dateColumnName = 'data';
             includeOptions.push({ model: Entidade.Automovel, as: "automovel" });
             break;
         case 'Consignacao':
             EntidadeSelecionada = Entidade.Consignacao;
-            dateColumnName = 'data_inicio'; // Consignacao usa 'data_inicio'
-            // Consignacao se relaciona com Automovel e Cliente
+            dateColumnName = 'data_inicio';
             includeOptions.push(
                 { model: Entidade.Automovel, as: "automovel" },
                 { model: Entidade.Cliente, as: "cliente" }
@@ -116,8 +94,7 @@ exports.gerarRelatorio = async (req, res) => {
             break;
         case 'Manutencao':
             EntidadeSelecionada = Entidade.Manutencao;
-            dateColumnName = 'data_envio'; // Manutencao usará 'data_envio' para o filtro
-            // Manutencao se relaciona apenas com Automovel
+            dateColumnName = 'data_envio';
             includeOptions.push({ model: Entidade.Automovel, as: "automovel" });
             break;
         default:
@@ -125,22 +102,19 @@ exports.gerarRelatorio = async (req, res) => {
     }
 
     try {
-        // Objeto de opções da query que será montado dinamicamente
         const queryOptions = {
             where: {
-                // Usa a variável com o nome da coluna correta
                 [dateColumnName]: {
                     [Op.between]: [new Date(dataInicio), new Date(dataFim)]
                 }
             },
-            // Usa o array de includes que foi configurado no switch
             include: includeOptions
         };
 
         const dados = await EntidadeSelecionada.findAll(queryOptions);
         res.status(200).send(dados);
     } catch (error) {
-        console.error("Erro detalhado ao gerar relatório:", error); // Log detalhado no servidor
+        console.error("Erro detalhado ao gerar relatório:", error);
         res.status(500).send({ mensagem: "Erro ao gerar relatório.", error: error.message });
     }
 };

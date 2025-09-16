@@ -3,7 +3,6 @@ const Entidade = require("../models/index");
 const { Op } = require("sequelize");
 const { response } = require("express");
 
-// Função auxiliar para lidar com erros
 const handleServerError = (res, error) => {
     console.error(error);
     res.status(500).send({ erro: 'Um erro ocorreu' });
@@ -67,33 +66,28 @@ exports.createAutomovel = async (req, res) => {
 }
 
 exports.verificarDuplicidade = async (req, res) => {
-    // 1. Recebe o ID do automóvel que está sendo editado (se houver)
     const { placa, renavam, idAutomovelAtual } = req.body;
 
     try {
         const condicoes = [];
 
-        // Adiciona as condições de busca somente se os campos foram enviados
         if (placa) condicoes.push({ placa: placa });
         if (renavam) condicoes.push({ renavam: renavam });
 
-        // Se nenhum dado foi enviado, não há o que verificar
         if (condicoes.length === 0) {
             return res.status(200).send({ erro: false });
         }
 
-        // 2. Monta a cláusula 'where' principal para buscar por placa OU renavam
+
         const whereClause = {
             [Op.or]: condicoes
         };
 
-        // 3. Se um ID de automóvel atual foi fornecido (modo de edição),
-        //    adiciona uma condição para EXCLUIR esse automóvel da busca.
+
         if (idAutomovelAtual) {
             whereClause.id = { [Op.ne]: idAutomovelAtual }; // Op.ne = Not Equal (Não é igual a)
         }
 
-        // 4. Executa uma única consulta ao banco de dados
         const existente = await Entidade.Automovel.findOne({
             where: whereClause
         });
@@ -105,11 +99,11 @@ exports.verificarDuplicidade = async (req, res) => {
             if (renavam && existente.renavam === renavam) {
                 return res.status(409).send({ erro: true, mensagemErro: 'Já existe outro automóvel com este registro de Renavam.' });
             }
-            // Caso raro: ambos diferentes, mas caiu aqui (não deveria acontecer)
+
             return res.status(409).send({ erro: true, mensagemErro: 'Já existe outro automóvel com este registro.' });
         }
 
-        // Se não encontrou nenhum outro automóvel, a verificação passa
+
         return res.status(200).send({ erro: false });
 
     } catch (error) {
@@ -142,10 +136,6 @@ exports.getAutomovelByRenavam = async (req, res) => {
 
     try {
 
-        // if (!renavam || typeof renavam !== "string" || renavam.trim() === "" || renavam === "" || renavam === undefined) {
-        //     return res.status(400).send({ erro: true, mensagemErro: "Informe o renavam" });
-        // }
-
         const automovel = await Entidade.Automovel.findOne({
             where: {
                 renavam: renavam
@@ -169,10 +159,6 @@ exports.getAutomovelByPlaca = async (req, res) => {
     const placa = req.params.placa;
 
     try {
-
-        // if (!renavam || typeof renavam !== "string" || renavam.trim() === "" || renavam === "" || renavam === undefined) {
-        //     return res.status(400).send({ erro: true, mensagemErro: "Informe o renavam" });
-        // }
 
         const automovel = await Entidade.Automovel.findOne({
             where: {
@@ -199,11 +185,8 @@ exports.updateAutomovel = async (req, res) => {
     const updateData = req.body;
 
     if (req.file) {
-        // Se um novo arquivo existe, adiciona seu caminho aos dados de atualização
-        const file = req.file;
-        // const imagemPath = file ? file.path : null;
 
-        // updateData.imagem = req.file.path;
+        const file = req.file;
 
         updateData.imagem = file ? file.path : null;
         console.log(`Nova imagem recebida para o automóvel ${id}: ${req.file.path}`);
@@ -255,7 +238,7 @@ exports.getAutomovelDetalhesById = async (req, res) => {
     const id = req.params.id;
 
     try {
-        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
+
         const automovel = await Entidade.Automovel.findByPk(id, {
             include: [
                 {
@@ -273,20 +256,6 @@ exports.getAutomovelDetalhesById = async (req, res) => {
         if (!automovel) {
             return res.status(404).send({ erro: true, mensagemErro: 'Automóvel não encontrado' });
         }
-
-        // ETAPA 2: Busca os modelos da marca encontrada
-        // Usamos o marcaId do automóvel que veio na primeira query
-        // const marcaIdDoAutomovel = automovel.marcaId;
-        // const modelosDaMarca = await Entidade.Modelo.findAll({
-        //     where: { id: automovel?.modeloId }
-        // });
-
-        // ETAPA 3: Junta os resultados antes de enviar
-        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        // const detalhesCompletos = automovel.get({ plain: true });
-
-        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        // detalhesCompletos.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
 
         return res.status(200).send(automovel);
 

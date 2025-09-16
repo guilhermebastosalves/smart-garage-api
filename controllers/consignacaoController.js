@@ -154,14 +154,13 @@ exports.getConsignacaoDetalhesById = async (req, res) => {
     const id = req.params.id;
 
     try {
-        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
+
         const consignacao = await Entidade.Consignacao.findByPk(id, {
             include: [
                 {
                     model: Entidade.Automovel,
                     as: 'automovel',
                     include: [
-                        // A inclusão da Marca a partir do Automóvel está correta
                         { model: Entidade.Marca, as: 'marca' },
                         { model: Entidade.Modelo, as: "modelo" }
                     ]
@@ -182,20 +181,6 @@ exports.getConsignacaoDetalhesById = async (req, res) => {
             return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada' });
         }
 
-        // ETAPA 2: Busca os modelos da marca encontrada
-        // Usamos o marcaId do automóvel que veio na primeira query
-        // const marcaIdDoAutomovel = consignacao.automovel.marcaId;
-        // const modelosDaMarca = await Entidade.Modelo.findAll({
-        //     where: { marcaId: marcaIdDoAutomovel }
-        // });
-
-        // ETAPA 3: Junta os resultados antes de enviar
-        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        // const detalhesCompletos = consignacao.get({ plain: true });
-
-        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        // detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
-
         return res.status(200).send(consignacao);
 
     } catch (erro) {
@@ -204,31 +189,22 @@ exports.getConsignacaoDetalhesById = async (req, res) => {
 };
 
 
-// Arquivo: src/controllers/consignacaoController.js
-
-// ... (outras funções do controller)
-
 exports.encerrarConsignacao = async (req, res) => {
     const id = req.params.id;
-    const { data_termino } = req.body; // Recebe a data de término do front-end
+    const { data_termino } = req.body;
 
-    // Validação simples para garantir que a data foi enviada
     if (!data_termino) {
         return res.status(400).send({ erro: true, mensagemErro: "A data de término é obrigatória." });
     }
 
-    // 1. Converte a string recebida para um objeto Date.
+
     const dataTerminoObj = new Date(data_termino);
 
-    // 2. Cria um objeto Date para o dia de hoje.
     const hoje = new Date();
 
-    // 3. Zera as horas de ambas as datas para comparar apenas o dia, 
-    //    ignorando o horário e o fuso.
     dataTerminoObj.setHours(0, 0, 0, 0);
     hoje.setHours(0, 0, 0, 0);
 
-    // 4. Compara os objetos Date. Agora a comparação é cronológica.
     if (dataTerminoObj > hoje) {
         return res.status(400).send({ erro: true, mensagemErro: "A data de término não pode ser uma data futura." });
     }
@@ -237,17 +213,15 @@ exports.encerrarConsignacao = async (req, res) => {
 
     try {
 
-        // 2. Encontrar a consignação para obter o ID do automóvel
         const consignacao = await Entidade.Consignacao.findByPk(id, { transaction: t });
 
         if (!consignacao) {
-            await t.rollback(); // Desfaz a transação se a consignação não for encontrada
+            await t.rollback();
             return res.status(404).send({ erro: true, mensagemErro: 'Consignação não encontrada.' });
         }
 
         const automovelIdParaInativar = consignacao?.automovelId;
 
-        // 3. Atualizar a consignação para inativa
         await Entidade.Consignacao.update(
             {
                 ativo: false,
@@ -255,25 +229,22 @@ exports.encerrarConsignacao = async (req, res) => {
             },
             {
                 where: { id: id },
-                transaction: t // Garante que esta operação faça parte da transação
+                transaction: t
             }
         );
 
-        // 4. ATUALIZAR O AUTOMÓVEL para inativo
         if (automovelIdParaInativar) {
             await Entidade.Automovel.update(
                 { ativo: false },
                 {
                     where: { id: automovelIdParaInativar },
-                    transaction: t // Garante que esta operação também faça parte da transação
+                    transaction: t
                 }
             );
         }
 
-        // 5. Se tudo deu certo, confirma as operações no banco
         await t.commit();
 
-        // Retorna uma mensagem de sucesso
         return res.status(200).send({ sucesso: true, mensagem: 'Consignação encerrada com sucesso!' });
 
     } catch (erro) {
@@ -285,27 +256,24 @@ exports.encerrarConsignacao = async (req, res) => {
 exports.deleteConsignacao = async (req, res) => {
     const id = req.params.id;
 
-    // Inicia uma transação
     const t = await sequelize.transaction();
 
     try {
-        // 1. Encontrar a consignação para obter o ID do automóvel
+
         const consignacao = await Entidade.Consignacao.findByPk(id, { transaction: t });
 
         if (!consignacao) {
-            await t.rollback(); // Desfaz a transação
+            await t.rollback();
             return res.status(404).send({ erro: true, mensagemErro: "Consignação não encontrada." });
         }
 
         const automovelIdParaDeletar = consignacao.automovelId;
 
-        // 2. Deletar o registro da consignação
         await Entidade.Consignacao.destroy({
             where: { id: id },
             transaction: t
         });
 
-        // 3. Deletar o registro do automóvel associado
         if (automovelIdParaDeletar) {
 
             const auto = await Entidade.Automovel.findByPk(automovelIdParaDeletar);
@@ -316,25 +284,13 @@ exports.deleteConsignacao = async (req, res) => {
                 transaction: t
             });
 
-            // await Entidade.Modelo.destroy({
-            //     where: { marcaId: auto?.dataValues?.marcaId },
-            //     transaction: t
-            // })
-
-            // await Entidade.Marca.destroy({
-            //     where: { id: auto?.dataValues?.marcaId },
-            //     transaction: t
-            // })
-
         }
 
-        // 4. Se tudo deu certo, confirma as operações no banco
         await t.commit();
 
         return res.status(200).send({ sucesso: true, mensagem: "Consignação e automóvel associado foram excluídos com sucesso." });
 
     } catch (erro) {
-        // 5. Se algo deu errado, desfaz todas as operações
         await t.rollback();
         handleServerError(res, erro);
     }

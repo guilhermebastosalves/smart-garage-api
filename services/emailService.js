@@ -1,14 +1,12 @@
 const nodemailer = require('nodemailer');
 
-// Configure o "transportador" de e-mail com as credenciais do seu serviço
-// IMPORTANTE: Use variáveis de ambiente (.env) para essas credenciais, nunca as coloque diretamente no código!
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST, // Ex: "smtp.gmail.com"
-    port: process.env.EMAIL_PORT, // Ex: 587
-    secure: false, // true para porta 465, false para outras
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: false,
     auth: {
-        user: process.env.EMAIL_USER, // Seu e-mail
-        pass: process.env.EMAIL_PASS, // Sua senha ou senha de aplicativo
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
 

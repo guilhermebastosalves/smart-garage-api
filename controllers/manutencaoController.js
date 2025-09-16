@@ -90,14 +90,12 @@ exports.getManutencaoDetalhesById = async (req, res) => {
     const id = req.params.id;
 
     try {
-        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
         const manutencao = await Entidade.Manutencao.findByPk(id, {
             include: [
                 {
                     model: Entidade.Automovel,
                     as: 'automovel',
                     include: [
-                        // A inclusão da Marca a partir do Automóvel está correta
                         { model: Entidade.Marca, as: 'marca' },
                         { model: Entidade.Modelo, as: 'modelo' }
                     ]
@@ -110,20 +108,6 @@ exports.getManutencaoDetalhesById = async (req, res) => {
             return res.status(404).send({ erro: true, mensagemErro: 'Manutencao não encontrada' });
         }
 
-        // ETAPA 2: Busca os modelos da marca encontrada
-        // Usamos o marcaId do automóvel que veio na primeira query
-        // const marcaIdDoAutomovel = manutencao.automovel.marcaId;
-        // const modelosDaMarca = await Entidade.Modelo.findAll({
-        //     where: { marcaId: marcaIdDoAutomovel }
-        // });
-
-        // ETAPA 3: Junta os resultados antes de enviar
-        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        // const detalhesCompletos = manutencao.get({ plain: true });
-
-        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        // detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
-
         return res.status(200).send(manutencao);
 
     } catch (erro) {
@@ -134,33 +118,29 @@ exports.getManutencaoDetalhesById = async (req, res) => {
 exports.deleteManutencao = async (req, res) => {
     const id = req.params.id;
 
-    // Inicia uma transação
     const t = await sequelize.transaction();
 
     try {
-        // 1. Encontrar a manutencao para obter o ID do automóvel
+
         const manutencao = await Entidade.Manutencao.findByPk(id, { transaction: t });
 
         if (!manutencao) {
-            await t.rollback(); // Desfaz a transação
+            await t.rollback();
             return res.status(404).send({ erro: true, mensagemErro: "Manutenção não encontrada." });
         }
 
-        // 2. Deletar o registro de manutencao
         await Entidade.Manutencao.destroy({
             where: { id: id },
             transaction: t
         });
 
-        // 3. Se tudo deu certo, confirma as operações
         await t.commit();
 
         return res.status(200).send({ sucesso: true, mensagem: "Manutenção excluída com sucesso." });
 
     } catch (erro) {
-        // 4. Se algo deu errado, desfaz tudo
         await t.rollback();
-        handleServerError(res, erro); // função de erro genérica
+        handleServerError(res, erro);
     }
 };
 
@@ -207,9 +187,8 @@ exports.getAllManutencoesInativas = async (req, res) => {
 
 exports.finalizarManutencao = async (req, res) => {
     const id = req.params.id;
-    const { data_retorno } = req.body; // Recebe a data de retorno do front-end
+    const { data_retorno } = req.body;
 
-    // Validação da data
     if (!data_retorno) {
         return res.status(400).send({ erro: true, mensagemErro: "A data de retorno é obrigatória." });
     }
@@ -223,11 +202,10 @@ exports.finalizarManutencao = async (req, res) => {
         return res.status(400).send({ erro: true, mensagemErro: "A data de retorno não pode ser uma data futura." });
     }
 
-    // Inicia uma transação
     const t = await sequelize.transaction();
 
     try {
-        // 1. Encontrar a manutenção para obter o ID do automóvel
+
         const manutencao = await Entidade.Manutencao.findByPk(id, { transaction: t });
 
         if (!manutencao) {
@@ -235,8 +213,6 @@ exports.finalizarManutencao = async (req, res) => {
             return res.status(404).send({ erro: true, mensagemErro: 'Manutenção não encontrada.' });
         }
 
-
-        // 2. Atualizar a manutenção para inativa
         await Entidade.Manutencao.update(
             {
                 ativo: false,
@@ -248,13 +224,11 @@ exports.finalizarManutencao = async (req, res) => {
             }
         );
 
-        // 4. Se tudo deu certo, confirma as operações
         await t.commit();
 
         return res.status(200).send({ sucesso: true, mensagem: 'Manutenção finalizada!' });
 
     } catch (erro) {
-        // 5. Se algo deu errado, desfaz tudo
         await t.rollback();
         handleServerError(res, erro);
     }

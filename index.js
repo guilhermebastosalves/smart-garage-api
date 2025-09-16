@@ -9,31 +9,6 @@ const { sequelize } = require('./db');
 
 sequelize.sync({ alter: true }).then(async () => {
     console.log('Sincronizado!');
-
-    // const newMarca = await DB.Marca.create({
-    //     nome: "Volkswagen"
-    // });
-
-    // const newAutomovel = await DB.Automovel.create({
-    //     ativo: true,
-    //     cor: "Marrom",
-    //     combustivel: "Etanol",
-    //     km: "80000",
-    //     origem: "Compra",
-    //     placa: "ACK1618",
-    //     renavam: "11111111111",
-    //     valor: 50000,
-    //     marcaId: newMarca.id,
-    //     ano_fabricacao: 1991,
-    //     ano_modelo: 1991
-    // });
-
-    // const newModelo = await DB.Modelo.create({
-    //     nome: "Gol",
-    //     marcaId: newMarca.id
-    // });
-
-
 });
 
 

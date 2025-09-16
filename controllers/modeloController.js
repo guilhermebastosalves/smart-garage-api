@@ -78,7 +78,7 @@ exports.getModelosByMarca = async (req, res) => {
     try {
         const modelos = await Entidade.Modelo.findAll({
             where: { marcaId: marcaId },
-            order: [['nome', 'ASC']] // Opcional: ordena os modelos por nome
+            order: [['nome', 'ASC']]
         });
         res.status(200).send(modelos);
     } catch (error) {

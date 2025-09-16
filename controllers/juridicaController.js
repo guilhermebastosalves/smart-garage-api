@@ -84,7 +84,7 @@ exports.createJuridica = async (req, res) => {
 };
 
 exports.verificarDuplicidade = async (req, res) => {
-    // 1. Recebe o ID do cliente que está sendo editado
+
     const { cnpj, razao_social, idClienteAtual } = req.body;
 
     try {
@@ -96,10 +96,8 @@ exports.verificarDuplicidade = async (req, res) => {
             return res.status(200).send({ erro: false });
         }
 
-        // 2. Monta a cláusula 'where' principal
         const whereClause = { [Op.or]: condicoes };
 
-        // 3. Exclui o cliente atual da busca se estiver no modo de edição
         if (idClienteAtual) {
             whereClause.clienteId = { [Op.ne]: idClienteAtual };
         }

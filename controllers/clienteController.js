@@ -88,21 +88,19 @@ exports.getAllDetalhado = async (req, res) => {
     try {
         const clientes = await Entidade.Cliente.findAll({ order: [['nome', 'ASC']] });
 
-        // Usamos Promise.all para buscar os detalhes de todos os clientes em paralelo
         const clientesDetalhado = await Promise.all(
             clientes.map(async (cliente) => {
-                // Tenta encontrar um registro em 'Fisica'
+
                 const fisica = await Entidade.Fisica.findOne({ where: { clienteId: cliente.id } });
                 if (fisica) {
                     return {
-                        ...cliente.toJSON(), // Converte o objeto Sequelize para JSON
+                        ...cliente.toJSON(),
                         tipo: 'Pessoa Física',
                         documento: fisica.cpf,
                         detalhes: fisica
                     };
                 }
 
-                // Se não for física, tenta encontrar em 'Juridica'
                 const juridica = await Entidade.Juridica.findOne({ where: { clienteId: cliente.id } });
                 if (juridica) {
                     return {
@@ -113,7 +111,6 @@ exports.getAllDetalhado = async (req, res) => {
                     };
                 }
 
-                // Caso um cliente não tenha nem registro físico nem jurídico (dado órfão)
                 return {
                     ...cliente.toJSON(),
                     tipo: 'Não definido',
@@ -133,14 +130,13 @@ exports.update = async (req, res) => {
     const { id } = req.params;
     const { cliente, fisica, juridica, endereco, cidade, estado } = req.body;
 
-    // Inicia a transação
     const t = await sequelize.transaction();
 
     try {
-        // Atualiza Cliente
+
         await Entidade.Cliente.update(cliente, { where: { id }, transaction: t });
 
-        // Atualiza Fisica ou Juridica
+
         if (fisica) {
             await Entidade.Fisica.update(fisica, { where: { clienteId: id }, transaction: t });
         } else if (juridica) {
@@ -149,7 +145,6 @@ exports.update = async (req, res) => {
 
         if (endereco && cidade && estado) {
 
-            // 2. Atualiza Estado e Cidade (sem alterações aqui)
             if (estado && estado.id) {
                 await Entidade.Estado.update({ uf: estado.uf }, { where: { id: estado.id }, transaction: t });
             }
@@ -157,20 +152,16 @@ exports.update = async (req, res) => {
                 await Entidade.Cidade.update({ nome: cidade.nome }, { where: { id: cidade.id }, transaction: t });
             }
 
-            // 3. ATUALIZA o registo de Endereço existente pelo clienteId
-            // Garante que o objeto 'endereco' existe antes de tentar o update
             if (endereco) {
                 await Entidade.Endereco.update(
                     {
-                        // Dados a serem atualizados
                         cep: endereco.cep,
                         logradouro: endereco.logradouro,
                         bairro: endereco.bairro,
                         numero: endereco.numero,
-                        cidadeId: cidade.id // Garante que a chave estrangeira está correta
+                        cidadeId: cidade.id
                     },
                     {
-                        // Condição para encontrar o registo a ser atualizado
                         where: { clienteId: id },
                         transaction: t
                     }
@@ -178,7 +169,6 @@ exports.update = async (req, res) => {
             }
         }
 
-        // Se tudo deu certo, confirma a transação
         await t.commit();
         res.status(200).send({ mensagem: "Cliente atualizado com sucesso!" });
 

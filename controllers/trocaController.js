@@ -92,14 +92,12 @@ exports.getTrocaDetalhesById = async (req, res) => {
     const id = req.params.id;
 
     try {
-        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
         const troca = await Entidade.Troca.findByPk(id, {
             include: [
                 {
                     model: Entidade.Automovel,
                     as: 'automovel',
                     include: [
-                        // A inclusão da Marca a partir do Automóvel está correta
                         { model: Entidade.Marca, as: 'marca' },
                         { model: Entidade.Modelo, as: "modelo" }
 
@@ -121,20 +119,6 @@ exports.getTrocaDetalhesById = async (req, res) => {
             return res.status(404).send({ erro: true, mensagemErro: 'Troca não encontrada' });
         }
 
-        // ETAPA 2: Busca os modelos da marca encontrada
-        // Usamos o marcaId do automóvel que veio na primeira query
-        // const marcaIdDoAutomovel = troca.automovel.marcaId;
-        // const modelosDaMarca = await Entidade.Modelo.findAll({
-        //     where: { marcaId: marcaIdDoAutomovel }
-        // });
-
-        // ETAPA 3: Junta os resultados antes de enviar
-        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        // const detalhesCompletos = troca.get({ plain: true });
-
-        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        // detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
-
         return res.status(200).send(troca);
 
     } catch (erro) {
@@ -146,11 +130,9 @@ exports.getTrocaDetalhesById = async (req, res) => {
 exports.deleteTroca = async (req, res) => {
     const id = req.params.id;
 
-    // Inicia uma transação
     const t = await sequelize.transaction();
 
     try {
-        // 1. Encontrar a troca para obter os IDs dos automóveis
         const troca = await Entidade.Troca.findByPk(id, { transaction: t });
 
         if (!troca) {
@@ -161,13 +143,11 @@ exports.deleteTroca = async (req, res) => {
         const automovelRecebidoId = troca.automovelId;
         const automovelFornecidoId = troca.automovel_fornecido;
 
-        // 2. Deletar o registro da troca
         await Entidade.Troca.destroy({
             where: { id: id },
             transaction: t
         });
 
-        // 3. Deletar o automóvel que a loja RECEBEU
         if (automovelRecebidoId) {
 
             const auto = await Entidade.Automovel.findByPk(automovelRecebidoId);
@@ -177,18 +157,8 @@ exports.deleteTroca = async (req, res) => {
                 transaction: t
             });
 
-            // await Entidade.Modelo.destroy({
-            //     where: { marcaId: auto?.dataValues?.marcaId },
-            //     transaction: t
-            // })
-
-            // await Entidade.Marca.destroy({
-            //     where: { id: auto?.dataValues?.marcaId },
-            //     transaction: t
-            // })
         }
 
-        // 4. REATIVAR o automóvel que o cliente FORNECEU
         if (automovelFornecidoId) {
             await Entidade.Automovel.update(
                 { ativo: true },
@@ -199,7 +169,6 @@ exports.deleteTroca = async (req, res) => {
             );
         }
 
-        // 5. Se tudo deu certo, confirma as operações
         await t.commit();
 
         return res.status(200).send({
@@ -208,9 +177,8 @@ exports.deleteTroca = async (req, res) => {
         });
 
     } catch (erro) {
-        // 6. Se algo deu errado, desfaz tudo
         await t.rollback();
-        handleServerError(res, erro); // Sua função de erro genérica
+        handleServerError(res, erro);
     }
 };
 

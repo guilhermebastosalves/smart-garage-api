@@ -107,14 +107,13 @@ exports.getVendaDetalhesById = async (req, res) => {
     const id = req.params.id;
 
     try {
-        // ETAPA 1: Busca a consignação com os dados diretamente relacionados
+
         const venda = await Entidade.Venda.findByPk(id, {
             include: [
                 {
                     model: Entidade.Automovel,
                     as: 'automovel',
                     include: [
-                        // A inclusão da Marca a partir do Automóvel está correta
                         { model: Entidade.Marca, as: 'marca' },
                         { model: Entidade.Modelo, as: "modelo" }
 
@@ -136,20 +135,6 @@ exports.getVendaDetalhesById = async (req, res) => {
             return res.status(404).send({ erro: true, mensagemErro: 'venda não encontrada' });
         }
 
-        // ETAPA 2: Busca os modelos da marca encontrada
-        // Usamos o marcaId do automóvel que veio na primeira query
-        // const marcaIdDoAutomovel = venda.automovel.marcaId;
-        // const modelosDaMarca = await Entidade.Modelo.findAll({
-        //     where: { marcaId: marcaIdDoAutomovel }
-        // });
-
-        // ETAPA 3: Junta os resultados antes de enviar
-        // Convertemos o resultado do Sequelize para um objeto simples para poder modificá-lo
-        // const detalhesCompletos = venda.get({ plain: true });
-
-        // Adicionamos a lista de modelos encontrada ao objeto do automóvel
-        // detalhesCompletos.automovel.modelos = modelosDaMarca; // Usamos 'modelos' (plural)
-
         return res.status(200).send(venda);
 
     } catch (erro) {
@@ -160,30 +145,27 @@ exports.getVendaDetalhesById = async (req, res) => {
 exports.deleteVenda = async (req, res) => {
     const id = req.params.id;
 
-    // Inicia uma transação
     const t = await sequelize.transaction();
 
     try {
-        // 1. Encontrar a venda para obter o ID do automóvel
+
         const venda = await Entidade.Venda.findByPk(id, { transaction: t });
 
         if (!venda) {
-            await t.rollback(); // Desfaz a transação
+            await t.rollback();
             return res.status(404).send({ erro: true, mensagemErro: "Venda não encontrada." });
         }
 
         const automovelIdParaReativar = venda.automovelId;
 
-        // 2. Deletar o registro da venda
         await Entidade.Venda.destroy({
             where: { id: id },
             transaction: t
         });
 
-        // 3. ATUALIZAR o automóvel associado, definindo-o como ATIVO
         if (automovelIdParaReativar) {
             await Entidade.Automovel.update(
-                { ativo: true }, // A mudança principal está aqui!
+                { ativo: true },
                 {
                     where: { id: automovelIdParaReativar },
                     transaction: t
@@ -191,14 +173,12 @@ exports.deleteVenda = async (req, res) => {
             );
         }
 
-        // 4. Se tudo deu certo, confirma as operações
         await t.commit();
 
         return res.status(200).send({ sucesso: true, mensagem: "Venda excluída e automóvel retornado ao estoque." });
 
     } catch (erro) {
-        // 5. Se algo deu errado, desfaz tudo
         await t.rollback();
-        handleServerError(res, erro); // Sua função de erro genérica
+        handleServerError(res, erro);
     }
 };
