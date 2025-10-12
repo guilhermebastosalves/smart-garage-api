@@ -25,7 +25,7 @@ const Automovel = db.sequelize.define('automovel', {
         allowNull: false
     },
     combustivel: {
-        type: db.Sequelize.ENUM('Diesel', 'Etanol', 'Gasolina', 'Flex'),
+        type: db.Sequelize.ENUM('Diesel', 'Elétrico', 'Etanol', 'Flex', 'Gasolina', "Híbrido"),
         allowNull: false
     },
     km: {
