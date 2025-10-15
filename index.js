@@ -80,6 +80,9 @@ const vendedorRoutes = require('./routes/vendedorRoutes');
 // ROTAS - RELATOIRO
 const relatorioRoutes = require('./routes/relatorioRoutes');
 
+// ROTAS - COMISSAO
+const comissaoRoutes = require('./routes/comissaoRoutes');
+
 
 app.use('/api/automovel', automovelRoutes);
 app.use('/api/marca', marcaRoutes);
@@ -100,6 +103,7 @@ app.use('/api/login', loginRoutes);
 app.use('/api/funcionario', funcionarioRoutes);
 app.use('/api/vendedor', vendedorRoutes);
 app.use('/api/relatorio', relatorioRoutes);
+app.use('/api/comissao', comissaoRoutes);
 
 
 const path = require("path");

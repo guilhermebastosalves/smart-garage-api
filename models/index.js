@@ -16,6 +16,7 @@ const Gasto = require('./Gasto');
 const Manutencao = require('./Manutencao');
 const Gerente = require('./Gerente');
 const Vendedor = require('./Vendedor');
+const Comissao = require('./Comissao');
 
 // RELAÇÃ0 1xN MARCA-AUTOMÓVEL
 Marca.hasMany(Automovel);
@@ -129,5 +130,6 @@ module.exports = {
     Gasto,
     Manutencao,
     Gerente,
-    Vendedor
+    Vendedor,
+    Comissao
 }
