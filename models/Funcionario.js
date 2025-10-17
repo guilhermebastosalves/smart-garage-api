@@ -45,6 +45,11 @@ const Funcionario = db.sequelize.define('funcionario', {
     resetPasswordExpires: {
         type: db.Sequelize.DATE,
         allowNull: true
+    },
+    precisa_alterar_senha: {
+        type: db.Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 });
 

@@ -67,7 +67,8 @@ exports.login = async (req, res) => {
             {
                 id: funcionario?.id,
                 nome: funcionario?.nome,
-                role: role
+                role: role,
+                precisa_alterar_senha: funcionario.precisa_alterar_senha
             },
             process.env.JWT_SECRET || 'seu_segredo_super_secreto',
             { expiresIn: '8h' }

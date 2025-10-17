@@ -56,3 +56,31 @@ exports.getAllFuncionarios = async (req, res) => {
         handleServerError(res, err);
     })
 };
+
+exports.alterarSenhaLogado = async (req, res) => {
+    // O ID vem do token, garantindo que o utilizador só pode alterar a própria senha
+    const { id } = req.user;
+    const { senha } = req.body;
+
+    console.log(senha)
+
+    if (!senha) {
+        return res.status(400).send({ mensagem: "A nova senha é obrigatória." });
+    }
+
+    try {
+        const senhaHash = await bcrypt.hash(senha, 10);
+
+        await Entidade.Funcionario.update(
+            {
+                senha: senhaHash,
+                precisa_alterar_senha: false
+            },
+            { where: { id: id } }
+        );
+
+        res.status(200).send({ mensagem: "Senha alterada com sucesso!" });
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};
