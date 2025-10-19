@@ -22,6 +22,10 @@ const Venda = db.sequelize.define("venda", {
     valor: {
         type: db.Sequelize.DECIMAL(10, 2),
         allowNull: false
+    },
+    origem_automovel: {
+        type: db.Sequelize.STRING,
+        allowNull: false
     }
 });
 

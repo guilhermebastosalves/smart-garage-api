@@ -263,3 +263,35 @@ exports.getAutomovelDetalhesById = async (req, res) => {
         handleServerError(res, erro);
     }
 };
+
+exports.verificarStatus = async (req, res) => {
+    const { placa, renavam } = req.body;
+
+    if (!placa && !renavam) {
+        return res.status(400).send({ mensagem: "Placa ou Renavam são obrigatórios." });
+    }
+
+    try {
+        const automovel = await Entidade.Automovel.findOne({
+            where: {
+                [Op.or]: [
+                    { placa: placa || null },
+                    { renavam: renavam || null }
+                ]
+            }
+        });
+
+        if (!automovel) {
+            return res.status(200).send({ status: 'nao_existe' });
+        }
+
+        if (automovel.ativo) {
+            return res.status(409).send({ status: 'ativo', automovel, mensagem: "Este automóvel já está ativo no estoque." });
+        } else {
+            return res.status(200).send({ status: 'inativo', automovel });
+        }
+
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};

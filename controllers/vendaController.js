@@ -19,17 +19,25 @@ exports.getAllVendas = async (req, res) => {
 };
 
 exports.createVenda = async (req, res) => {
+
+    const {
+        data,
+        forma_pagamento,
+        valor,
+        comissao,
+        automovelId,
+        clienteId,
+        funcionarioId
+    } = req.body;
+
+    const t = await sequelize.transaction();
+
     try {
 
-        const {
-            data,
-            forma_pagamento,
-            valor,
-            comissao,
-            automovelId,
-            clienteId,
-            funcionarioId
-        } = req.body;
+        const automovelVendido = await Entidade.Automovel.findByPk(automovelId, { transaction: t });
+        if (!automovelVendido) {
+            throw new Error("Automóvel não encontrado.");
+        }
 
         const venda = await Entidade.Venda.create({
 
@@ -39,9 +47,11 @@ exports.createVenda = async (req, res) => {
             valor: valor,
             funcionarioId: funcionarioId,
             automovelId: automovelId,
-            clienteId: clienteId
-        });
+            clienteId: clienteId,
+            origem_automovel: automovelVendido.origem
+        }, { transaction: t });
 
+        await t.commit();
         return res.status(201).send(venda);
 
     } catch (err) {

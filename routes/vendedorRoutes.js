@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const vendedorController = require("../controllers/vendedorController");
-const authMiddleware = require('../middleware/authMiddleware'); // Middleware para verificar o token e o cargo
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/', authMiddleware.verifyToken, authMiddleware.isGerente, vendedorController.create);
 
