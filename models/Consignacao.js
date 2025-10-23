@@ -23,6 +23,10 @@ const Consignacao = db.sequelize.define('consignacao', {
     valor: {
         type: db.Sequelize.DECIMAL(10, 2),
         allowNull: false
+    },
+    motivo_encerramento: {
+        type: db.Sequelize.STRING,
+        allowNull: true
     }
 });
 

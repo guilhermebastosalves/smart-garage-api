@@ -191,7 +191,7 @@ exports.getConsignacaoDetalhesById = async (req, res) => {
 
 exports.encerrarConsignacao = async (req, res) => {
     const id = req.params.id;
-    const { data_termino } = req.body;
+    const { data_termino, motivo_encerramento } = req.body;
 
     if (!data_termino) {
         return res.status(400).send({ erro: true, mensagemErro: "A data de término é obrigatória." });
@@ -225,7 +225,8 @@ exports.encerrarConsignacao = async (req, res) => {
         await Entidade.Consignacao.update(
             {
                 ativo: false,
-                data_fim: data_termino
+                data_fim: data_termino,
+                motivo_encerramento: motivo_encerramento || null
             },
             {
                 where: { id: id },
