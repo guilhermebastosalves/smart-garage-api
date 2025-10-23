@@ -13,6 +13,15 @@ const handleServerError = (res, error) => {
     res.status(500).send({ erro: 'Um erro ocorreu' });
 };
 
+const isPasswordStrong = (password) => {
+    if (password.length < 8) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    if (!/[^A-Za-z0-9]/.test(password)) return false;
+    return true;
+};
+
 exports.login = async (req, res) => {
     const { usuario, senha } = req.body;
 
@@ -120,6 +129,10 @@ exports.solicitarResetSenha = async (req, res) => {
 exports.resetarSenha = async (req, res) => {
     const { token } = req.params;
     const { senha } = req.body;
+
+    if (!isPasswordStrong(senha)) {
+        return res.status(400).send({ mensagem: "A senha não cumpre os requisitos de segurança." });
+    }
 
     try {
         const funcionario = await Entidade.Funcionario.findOne({

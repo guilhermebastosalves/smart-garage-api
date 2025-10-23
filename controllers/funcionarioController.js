@@ -8,8 +8,21 @@ const handleServerError = (res, error) => {
     res.status(500).send({ erro: 'Um erro ocorreu' });
 };
 
+const isPasswordStrong = (password) => {
+    if (password.length < 8) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    if (!/[^A-Za-z0-9]/.test(password)) return false;
+    return true;
+};
+
 exports.createFuncionario = async (req, res) => {
     const { nome, telefone, usuario, senha, role, email } = req.body;
+
+    if (!isPasswordStrong(senha)) {
+        return res.status(400).send({ mensagem: "A senha não cumpre os requisitos de segurança (mín. 8 caracteres, 1 maiúscula, 1 minúscula, 1 número, 1 especial)." });
+    }
 
     if (!['gerente', 'vendedor'].includes(role)) {
         return res.status(400).send({ erro: true, mensagemErro: "O cargo deve ser 'gerente' ou 'vendedor'." });
@@ -62,10 +75,12 @@ exports.alterarSenhaLogado = async (req, res) => {
     const { id } = req.user;
     const { senha } = req.body;
 
-    console.log(senha)
-
     if (!senha) {
         return res.status(400).send({ mensagem: "A nova senha é obrigatória." });
+    }
+
+    if (!isPasswordStrong(senha)) {
+        return res.status(400).send({ mensagem: "A nova senha não cumpre os requisitos de segurança." });
     }
 
     try {

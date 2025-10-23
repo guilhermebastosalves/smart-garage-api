@@ -2,6 +2,16 @@ const { where } = require('sequelize');
 const Entidade = require('../models/index');
 const bcrypt = require('bcryptjs');
 
+const isPasswordStrong = (password) => {
+    if (password.length < 8) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    if (!/[^A-Za-z0-9]/.test(password)) return false;
+    return true;
+};
+
+
 exports.findByFuncionarioid = async (req, res) => {
 
     const { id } = req.params;
@@ -31,6 +41,10 @@ exports.create = async (req, res) => {
 
     if (!nome || !usuario || !senha || !email || !telefone) {
         return res.status(400).send({ mensagem: "Todos os campos são obrigatórios." });
+    }
+
+    if (!isPasswordStrong(senha)) {
+        return res.status(400).send({ mensagem: "A senha não cumpre os requisitos de segurança." });
     }
 
     try {
