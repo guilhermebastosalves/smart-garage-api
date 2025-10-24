@@ -166,7 +166,10 @@ exports.getAutomovelByPlaca = async (req, res) => {
             }
         });
 
-        if (automovel) {
+        if (automovel && automovel.ativo === false) {
+            return res.status(400).send({ erro: true, mensagemErro: "Automóvel inativo" })
+        }
+        else if (automovel && automovel.ativo === true) {
             return res.status(200).send(automovel);
         }
         else {
