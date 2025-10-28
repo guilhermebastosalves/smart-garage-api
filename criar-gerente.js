@@ -12,13 +12,13 @@ const usuariosIniciais = [
         usuario: "admin",
         senha: "umaSenhaForteAdmin123" // Senha temporária 
     },
-    // {
-    //     nome: "Gerente da Garagem",
-    //     email: "gerente@smartgarage.com",
-    //     telefone: "11888888888",
-    //     usuario: "gerente",
-    //     senha: "outraSenhaForteGerente456" // Senha temporária
-    // }
+    {
+        nome: "Gerente da Garagem",
+        email: "gerente@smartgarage.com",
+        telefone: "11888888888",
+        usuario: "gerente",
+        senha: "outraSenhaForteGerente456" // Senha temporária
+    }
 ];
 
 const criarGerentes = async () => {
