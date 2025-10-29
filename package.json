@@ -13,6 +13,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "serve": "pm2 start index.js --name minha-api && pm2 save"
   }
 }
