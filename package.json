@@ -14,6 +14,6 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "serve": "pm2 start index.js --name smart-garage-api && pm2 save"
+    "serve": "pm2 start index.js --name Smart Garage API && pm2 save"
   }
 }
