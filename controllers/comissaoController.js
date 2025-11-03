@@ -1,8 +1,7 @@
-// Em controllers/comissaoController.js
 const Entidade = require('../models/index');
 const { sequelize } = require('../db');
 
-// Busca todas as faixas de comissão
+
 exports.getAll = async (req, res) => {
     try {
         const faixas = await Entidade.Comissao.findAll({ order: [['valor_minimo', 'ASC']] });
@@ -12,15 +11,14 @@ exports.getAll = async (req, res) => {
     }
 };
 
-// Atualiza todas as faixas de comissão de uma vez
+
 exports.updateAll = async (req, res) => {
-    const novasFaixas = req.body; // Espera um array de objetos de faixa
+    const novasFaixas = req.body;
     const t = await sequelize.transaction();
     try {
-        // Apaga todas as regras antigas
+
         await Entidade.Comissao.destroy({ where: {}, transaction: t });
 
-        // Insere as novas regras
         await Entidade.Comissao.bulkCreate(novasFaixas, { transaction: t });
 
         await t.commit();

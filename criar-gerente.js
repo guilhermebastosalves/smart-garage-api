@@ -51,7 +51,7 @@ const criarGerentes = async () => {
         await t.rollback();
         console.error("FALHA: Erro ao criar os utilizadores iniciais.", error);
     } finally {
-        // Fecha a conexão com o banco de dados
+
         await sequelize.close();
     }
 };
